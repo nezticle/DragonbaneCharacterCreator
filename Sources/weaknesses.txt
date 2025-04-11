@@ -1,0 +1,100 @@
+Gullible. I believe everything that others tell me.
+Greedy. I want a bigger share of all treasure.
+Thin-skinned. I never tolerate a provocation.
+Foolhardy. I always go first into danger.
+Fainthearted. I always stay at the back of the group.
+Monster Slayer. All monsters are evil and must be slain.
+Intolerant. Nightkin such as orcs and goblins are evil and need to be fought.
+Slothful. I take every chance to rest.
+Gluttonous. I take every chance I get to eat something tasty.
+Kleptomaniac. I can’t stop myself from stealing valuables.
+Vain. I’ll help anyone who gives me praise or compliments.
+Reckless. I always take big risks without thought of the consequences.
+Fearful of Magic. Magic is an evil force and mages cannot be trusted.
+Craving Knowledge. The hunt for knowledge is more important than my friends.
+Child of the Wild. I never sleep indoors.
+Boastful. I always exaggerate my accomplishments.
+Violent. I resort to violence to overcome every obstacle.
+Overbearing. I always tell others what to do.
+Pessimist. I always think things will turn out for the worst.
+Haughty. I look down on everyone I meet.
+Superstitious. I constantly interpret omens and fear bad luck.
+Impulsive. I act without thinking through the consequences.
+Paranoid. I suspect everyone of betrayal or treachery.
+Forgetful. Important details frequently slip my mind.
+Cowardly. I avoid combat or conflict whenever possible.
+Honest to a Fault. I always speak the truth, even if it's harmful.
+Grudge Holder. I never forgive an insult or betrayal.
+Compulsive Liar. I can’t resist spinning elaborate falsehoods.
+Judgmental. I quickly decide whether someone is worthy or worthless.
+Obsessed with Honor. My personal honor overrides practical decisions.
+Sentimental. I find it hard to discard even trivial keepsakes.
+Materialistic. I value objects and wealth above relationships.
+Jealous. I envy others' accomplishments or belongings.
+Claustrophobic. Tight spaces send me into panic.
+Arrogant. I refuse advice because I think I know best.
+Fatalistic. I believe destiny controls all, and my actions don't matter.
+Rebellious. I defy authority at every opportunity.
+Stubborn. Once I've decided, no force can change my mind.
+Hypochondriac. I constantly fear sickness or injury.
+Perfectionist. Tasks must be flawless, or they’re worthless.
+Melodramatic. I blow minor setbacks out of proportion.
+Selfish. My needs always come first.
+Easily Distracted. I struggle to focus on one task or conversation.
+Indecisive. I endlessly second-guess every choice.
+Obsessed with Cleanliness. Dirt and grime disgust me intensely.
+Morbid Curiosity. I’m drawn to danger, death, or forbidden places.
+Phobic of Fire. Flames terrify me, even torches.
+Phobic of Water. Large bodies of water or swimming fill me with dread.
+Phobic of Heights. High places cause me to panic.
+Obsessive Collector. I compulsively gather specific items.
+Haunted by Past. Traumatic memories often paralyze me.
+Trusting. I easily put faith in unworthy individuals.
+Manipulative. I use deception and charm to get my way.
+Obsessed with Revenge. Avenging past wrongs consumes my thoughts.
+Alcoholic. I cannot resist drink, even in dangerous situations.
+Suspicious of Magic. I distrust anyone who wields magical abilities.
+Pacifist. I refuse violence, even in self-defense.
+Hypocritical. My actions often contradict my words.
+Cynical. I never trust good intentions or kindness.
+Prone to Panic. I freeze or flee in high-pressure situations.
+Compulsive Gambler. I risk everything for the thrill of a wager.
+Sarcastic. My biting remarks alienate potential allies.
+Overconfident. I vastly overestimate my own abilities.
+Hero Worshipper. I obsessively follow or imitate a personal hero.
+Self-Righteous. I harshly judge others by my own moral standards.
+Naive. I always see the best in others, regardless of their actions.
+Exhibitionist. I crave attention and will act outrageously to get it.
+Unlucky. Misfortune seems to follow me wherever I go.
+Dependent. I rely heavily on others and fear abandonment.
+Secretive. I never share my plans or intentions with allies.
+Overly Ambitious. No price is too high for personal advancement.
+Fanatical. My beliefs or causes blind me to reason.
+Pyromaniac. I’m dangerously fascinated by fire.
+Insensitive. I fail to notice or care about others' emotions.
+Workaholic. I never stop working or pursuing tasks, even when harmful.
+Fatal Attraction. I am inexplicably drawn to dangerous people or places.
+Obsessed with Status. I constantly seek approval from those in power.
+Vengeful. Any perceived slight must be punished.
+Terrified of Death. My fear of dying influences all my decisions.
+Gossip. I cannot resist sharing juicy secrets, even harmful ones.
+Craves Adrenaline. I seek thrills at any cost.
+Misguided Loyalty. I stand by people even when it harms me.
+Competitive. I must always be better than others at any cost.
+Impatient. I cannot wait and act rashly.
+Impious. I openly disrespect or ridicule religious beliefs.
+Sleepwalker. I wander dangerously while asleep.
+Obsessed with Fame. I prioritize notoriety over everything else.
+Daydreamer. I lose touch with reality by escaping into fantasy.
+Fatal Flirtation. I charm and seduce without considering consequences.
+Animal Lover. I’ll risk anything to protect animals, even monsters.
+Mute Witness. I rarely speak, even when it would help.
+Unreliable. My promises mean little to me.
+Easily Influenced. Others can manipulate me with ease.
+Petty. I take offense at small slights and respond disproportionately.
+Bitter. I believe life has wronged me and hold grudges.
+Curse Magnet. I frequently attract magical misfortune.
+Weak Stomach. I cannot handle gore, blood, or foul odors.
+Obsessed with Rituals. I perform specific rituals compulsively.
+Always Late. I never manage my time well.
+Hedonist. I constantly seek pleasure, ignoring responsibilities.

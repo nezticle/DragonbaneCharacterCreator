@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:DragonbaneCharacterCreator}",
+            "name": "Debug DragonbaneCharacterCreator",
+            "program": "${workspaceFolder:DragonbaneCharacterCreator}/.build/debug/DragonbaneCharacterCreator",
+            "preLaunchTask": "swift: Build Debug DragonbaneCharacterCreator"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:DragonbaneCharacterCreator}",
+            "name": "Release DragonbaneCharacterCreator",
+            "program": "${workspaceFolder:DragonbaneCharacterCreator}/.build/release/DragonbaneCharacterCreator",
+            "preLaunchTask": "swift: Build Release DragonbaneCharacterCreator"
+        }
+    ]
+}
