@@ -657,6 +657,7 @@ struct Character {
     var age: Age
     var heroicAbilities: [HeroicAbilities]
     var trainedSkills: [Skills]
+    var magic: [String]
     var weakness: String
     var strength: Int
     var constitution: Int
@@ -676,6 +677,7 @@ struct Character {
         Age: \(age.rawValue)
         Abilities: \(heroicAbilities.map { $0.rawValue }.joined(separator: ", "))
         Trained Skills: \(trainedSkills.map { $0.rawValue }.joined(separator: ", "))
+        Magic: \(magic.joined(separator: ", "))
         Weakness: \(weakness)
         Attributes:
           STR: \(strength)
@@ -738,6 +740,7 @@ func generateCharacter() -> Character {
         age: age,
         heroicAbilities: [],
         trainedSkills: [],
+        magic: selectStartingMagic(profession: profession),
         weakness: "",
         strength: attributeDict[.str] ?? 0,
         constitution: attributeDict[.con] ?? 0,
@@ -881,6 +884,91 @@ func selectAppearanceSeeds(kin: Race) -> [String] {
         let selectedSeeds = appearanceSeeds.shuffled().prefix(2)
         return Array(selectedSeeds)
     }
+}
+
+func selectStartingMagic(profession: Profession) -> [String] {
+    // This function should return a list of starting magic spells based on the profession.
+    // For now, we will return an empty array.
+    // return []
+
+    let generalMagicTricks: [String] = [
+        "FETCH",
+        "FLICK",
+        "LIGHT",
+        "OPEN/CLOSE",
+        "REPAIR CLOTHES",
+        "SENSE MAGIC"
+    ]
+
+    let generalMagicRank1: [String] = [
+        "DISPEL",
+        "PROTECTOR"
+    ]
+
+    let animismMagicTricks: [String] = [
+        "BIRDSONG",
+        "CLEAN",
+        "COOK FOOD",
+        "FLORAL TRAIL",
+        "HAIRSTYLE"
+    ]
+
+    let animismMagicRank1: [String] = [
+        "ANIMAL WHISPERER",
+        "BANISH",
+        "ENSNARING ROOTS",
+        "LIGHTNING FLASH",
+        "TREAT WOUND"
+    ]
+
+    let elementalistMagicTricks: [String] = [
+        "HEAT/CHILL",
+        "IGNIGHT",
+        "PUFF OF SMOKE"
+    ]
+
+    let elementalistMagicRank1: [String] = [
+        "FIREBALL",
+        "FROST",
+        "GUST OF WIND",
+        "PILLAR",
+        "SHATTER"
+    ]
+
+    let mentalismMagicTricks: [String] = [
+        "LOCK/UNLOCK",
+        "MAGIC STOOL",
+        "SLOW FALL"
+    ]
+
+    let mentalismMagicRank1: [String] = [
+        "FARSIGHT",
+        "LEVITATE",
+        "LONGSTRIDER",
+        "POWER FIST",
+        "STONE SKIN"
+    ]
+
+    var magicTricks: [String] = []
+    var magicRank1: [String] = []
+    switch profession {
+    case .animist:
+        magicTricks = animismMagicTricks + generalMagicTricks
+        magicRank1 = animismMagicRank1 + generalMagicRank1
+    case .elementalist:
+        magicTricks = elementalistMagicTricks + generalMagicTricks
+        magicRank1 = elementalistMagicRank1 + generalMagicRank1
+    case .mentalist:
+        magicTricks = mentalismMagicTricks + generalMagicTricks
+        magicRank1 = mentalismMagicRank1 + generalMagicRank1
+    default:
+        return [];
+    }
+
+    let selectedTricks: Array<String>.SubSequence = magicTricks.shuffled().prefix(3)
+    let selectedRank1: Array<String>.SubSequence = magicRank1.shuffled().prefix(3)
+
+    return Array(selectedTricks) + Array(selectedRank1)
 }
 
 @main
