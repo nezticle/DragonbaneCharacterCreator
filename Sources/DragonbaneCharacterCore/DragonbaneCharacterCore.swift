@@ -1,4 +1,3 @@
-import ArgumentParser
 import Foundation
 
 // Define available races for your characters.
@@ -650,7 +649,7 @@ func rollGear(profession : Profession) -> [String] {
 
 // Define the structure for a Dragonbane character.
 // You can include additional properties or change the set of abilities based on your game rules.
-struct Character {
+public struct Character {
     var name: String
     var race: Race
     var profession: Profession
@@ -669,7 +668,7 @@ struct Character {
     var memento: String
     var appearanceSeeds: [String]
 
-    func description() -> String {
+    public func description() -> String {
         return """
         ---- Dragonbane Character ----
         Kin: \(race.rawValue)
@@ -728,7 +727,7 @@ func selectProfession() -> Profession {
 }
 
 // Create a new character with randomly generated traits.
-func generateCharacter() -> Character {
+public func generateCharacter() -> Character {
     let profession = selectProfession()
     let age = rollAge()
     let attributeDict = generateAttributes(for: profession, age: age)
@@ -969,12 +968,4 @@ func selectStartingMagic(profession: Profession) -> [String] {
     let selectedRank1: Array<String>.SubSequence = magicRank1.shuffled().prefix(3)
 
     return Array(selectedTricks) + Array(selectedRank1)
-}
-
-@main
-struct DragonbaneCharacterCreator: ParsableCommand {
-    mutating func run() throws {
-        let newCharacter = generateCharacter()
-        print(newCharacter.description())
-    }
 }

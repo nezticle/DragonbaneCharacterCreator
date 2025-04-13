@@ -5,17 +5,23 @@ import PackageDescription
 
 let package = Package(
     name: "DragonbaneCharacterCreator",
+    products: [
+        .library(
+            name: "DragonbaneCharacterCore",
+            targets: ["DragonbaneCharacterCore"]
+        ),
+        .executable(
+            name: "DragonbaneCharacterCLI",
+            targets: ["DragonbaneCharacterCLI"]
+        ),
+    ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.2.0"),
     ],
     targets: [
-        // Targets are the basic building blocks of a package, defining a module or a test suite.
-        // Targets can depend on other targets in this package and products from dependencies.
-        .executableTarget(
-            name: "DragonbaneCharacterCreator",
-            dependencies: [
-                .product(name: "ArgumentParser", package: "swift-argument-parser"),
-            ],
+        .target(
+            name: "DragonbaneCharacterCore",
+            dependencies: [],
             resources: [
                 .copy("weaknesses.txt"),
                 .copy("mementos.txt"),
@@ -34,6 +40,13 @@ let package = Package(
                 .copy("appearance_orc.txt"),
                 .copy("appearance_satyr.txt"),
                 .copy("appearance_wolfkin.txt")
+            ]
+        ),
+        .executableTarget(
+            name: "DragonbaneCharacterCLI",
+            dependencies: [
+                "DragonbaneCharacterCore",
+                .product(name: "ArgumentParser", package: "swift-argument-parser"),
             ]
         ),
     ]

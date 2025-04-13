@@ -17,6 +17,24 @@
             "name": "Release DragonbaneCharacterCreator",
             "program": "${workspaceFolder:DragonbaneCharacterCreator}/.build/release/DragonbaneCharacterCreator",
             "preLaunchTask": "swift: Build Release DragonbaneCharacterCreator"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:DragonbaneCharacterCreator}",
+            "name": "Debug DragonbaneCharacterCLI",
+            "program": "${workspaceFolder:DragonbaneCharacterCreator}/.build/debug/DragonbaneCharacterCLI",
+            "preLaunchTask": "swift: Build Debug DragonbaneCharacterCLI"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:DragonbaneCharacterCreator}",
+            "name": "Release DragonbaneCharacterCLI",
+            "program": "${workspaceFolder:DragonbaneCharacterCreator}/.build/release/DragonbaneCharacterCLI",
+            "preLaunchTask": "swift: Build Release DragonbaneCharacterCLI"
         }
     ]
 }
