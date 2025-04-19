@@ -1,7 +1,7 @@
 import Foundation
 
 // Define available races for your characters.
-enum Race: String, CaseIterable {
+enum Race: String, Codable, CaseIterable {
     case human = "Human"                    // Adaptive
     case halfling = "Halfling"              // Hard to Catch
     case dwarf = "Dwarf"                    // Unforving
@@ -99,7 +99,7 @@ func selectKin() -> Race {
 }
 
 // Define available character classes for your characters.
-enum Profession: String, CaseIterable {
+enum Profession: String, Codable, CaseIterable {
     case artisan = "Artisan"
     case bard = "Bard"
     case fighter = "Fighter"
@@ -166,7 +166,7 @@ extension Profession {
     }
 }
 
-enum Skills: String, CaseIterable {
+enum Skills: String, Codable, CaseIterable {
     case acrobatics = "Acrobatics"
     case awareness = "Awareness"
     case bartering = "Bartering"
@@ -199,7 +199,7 @@ enum Skills: String, CaseIterable {
     case swords = "Swords"
 }
 
-enum HeroicAbilities: String, CaseIterable {
+enum HeroicAbilities: String, Codable, CaseIterable {
     case assassin = "Assassin"
     case backstabbing = "Backstabbing"
     case battlecry = "Battle Cry"
@@ -271,7 +271,7 @@ enum Attributes: String, CaseIterable {
     case cha = "Charisma"
 }
 
-enum Age : String, CaseIterable {
+enum Age : String, Codable, CaseIterable {
     // Normally a D6 roll
     case young = "Young"    // 1-3, Trained skills +2, AGL and CON + 1
     case adult = "Adult"    // 4-5, Trained skills +4, AGL and CON + 0
@@ -667,10 +667,13 @@ public struct Character {
     var gear: [String]
     var memento: String
     var appearanceSeeds: [String]
+    var background: String
+    var appearance: String
 
     public func description() -> String {
         return """
         ---- Dragonbane Character ----
+        Name: \(name)
         Kin: \(race.rawValue)
         Profession: \(profession.rawValue)
         Age: \(age.rawValue)
@@ -690,7 +693,22 @@ public struct Character {
         Memento: \(memento)
         Appearance Seeds:
         \(appearanceSeeds.map { "  \($0)" }.joined(separator: "\n"))
+        Background: \(background)
+        Appearance: \(appearance)
         """
+    }
+
+    // Set the name of the character.
+    public mutating func setName(_ name: String) {
+        self.name = name
+    }
+    // Set the background of the character.
+    public mutating func setBackground(_ background: String) {
+        self.background = background
+    }
+    // Set the appearance of the character.
+    public mutating func setAppearance(_ appearance: String) {
+        self.appearance = appearance
     }
 }
 
@@ -733,7 +751,7 @@ public func generateCharacter() -> Character {
     let attributeDict = generateAttributes(for: profession, age: age)
     let kin = selectKin()
     var newCharacter = Character(
-        name: generateName(),
+        name: "",
         race: kin,
         profession: profession,
         age: age,
@@ -749,7 +767,9 @@ public func generateCharacter() -> Character {
         charisma: attributeDict[.cha] ?? 0,
         gear: rollGear(profession: profession),
         memento: selectMemento(),
-        appearanceSeeds: selectAppearanceSeeds(kin: kin)
+        appearanceSeeds: selectAppearanceSeeds(kin: kin),
+        background: "",
+        appearance: ""
     )
 
     newCharacter.heroicAbilities = newCharacter.race.startingAbilities

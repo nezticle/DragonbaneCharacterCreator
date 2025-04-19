@@ -5,6 +5,9 @@ import PackageDescription
 
 let package = Package(
     name: "DragonbaneCharacterCreator",
+    platforms: [
+        .macOS(.v10_15)
+    ],
     products: [
         .library(
             name: "DragonbaneCharacterCore",
@@ -17,11 +20,14 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.2.0"),
+        .package(url: "https://github.com/groue/GRDB.swift.git", from: "7.4.1")
     ],
     targets: [
         .target(
             name: "DragonbaneCharacterCore",
-            dependencies: [],
+            dependencies: [
+                .product(name: "GRDB", package: "GRDB.swift")
+            ],
             resources: [
                 .copy("weaknesses.txt"),
                 .copy("mementos.txt"),
@@ -46,7 +52,7 @@ let package = Package(
             name: "DragonbaneCharacterCLI",
             dependencies: [
                 "DragonbaneCharacterCore",
-                .product(name: "ArgumentParser", package: "swift-argument-parser"),
+                .product(name: "ArgumentParser", package: "swift-argument-parser")
             ]
         ),
     ]
