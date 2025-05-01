@@ -698,6 +698,20 @@ public struct Character {
         """
     }
 
+    public func shortDescription() -> String {
+        return """
+        ---- Dragonbane Character ----
+        Name: \(name)
+        Kin: \(race.rawValue)
+        Profession: \(profession.rawValue)
+        Age: \(age.rawValue)
+        Gear:
+        \(gear.map { "  \($0)" }.joined(separator: "\n"))
+        Background: \(background)
+        Appearance: \(appearance)
+        """
+    }
+
     // Set the name of the character.
     public mutating func setName(_ name: String) {
         self.name = name

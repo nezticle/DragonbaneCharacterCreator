@@ -356,8 +356,38 @@ func generateAndStoreImage(characterId: Int64, server: String, apiKey: String) a
 
     // Build the image generation prompt
     // Use character description for prompt since properties are internal
-    let prompt = "A highly detailed fantasy portrait of a character based on the following description:\n\(character.description())"
+    let prompt = """
+    Create an image using the character details provided using the following style:
 
+    A storybook-meets-gritty-fantasy illustration style, with strong ties to tabletop RPG character art. Blends high-detail line work with a dark medieval fairy tale aesthetic, offering both charm and menace.
+
+    Style Features:
+
+    1. Illustration Medium and Technique
+        • Digital emulation of traditional ink and wash: Visible line art overlays a wash-style color treatment that mimics watercolor or gouache.
+
+    2. Character Design
+        • Stylized but grounded anatomy: Characters are exaggerated just enough for flair without crossing into cartoon territory. Muscles, posture, and proportions emphasize archetype (e.g., brawny barbarian, wiry rogue).
+        • Expressive faces: Strong line work and brow shaping create intense or quirky facial expressions that convey personality quickly.
+        • Detailed costuming: Every outfit has a layered, practical, and slightly ragged quality, common to medieval fantasy and hinting at lived-in worlds.
+        • Fur, metal, and leather are common materials, often rendered with textured shading.
+
+    3. Composition and Silhouette
+        • Dynamic, readable silhouettes: Characters are posed to show role or emotion, often mid-action or ready for it.
+
+    4. Iconography and Themes
+        • Fantasy RPG tropes: Warriors, rogues, trolls, and pirates, all firmly placed in a high fantasy context.
+        • Macabre whimsy
+
+    Summary Phrase
+
+    “Ink-washed fantasy with grim whimsy and character-rich exaggeration, drawn from the pages of a well-worn adventurer’s guide.”
+
+    Just the character, background should be transparent.
+
+    Here is the character sheet:
+    \(character.shortDescription())
+    """
     // Prepare request
     let urlString = "\(server)/v1/images/generations"
     guard let url = URL(string: urlString) else {
@@ -375,6 +405,7 @@ func generateAndStoreImage(characterId: Int64, server: String, apiKey: String) a
         "prompt": prompt,
         "n": 1,
         "quality": "high",
+        "background": "transparent",
         "output_format": "webp"
     ]
     guard let bodyData = try? JSONSerialization.data(withJSONObject: jsonBody) else {
@@ -383,8 +414,13 @@ func generateAndStoreImage(characterId: Int64, server: String, apiKey: String) a
     }
     request.httpBody = bodyData
 
-    // Execute request
-    let (data, response) = try await URLSession.shared.data(for: request)
+    // Execute request (with extended timeouts for long-running image generation)
+    let sessionConfig = URLSessionConfiguration.default
+    // Allow up to 2 minutes for the request and resource load
+    sessionConfig.timeoutIntervalForRequest = 120
+    sessionConfig.timeoutIntervalForResource = 120
+    let session = URLSession(configuration: sessionConfig)
+    let (data, response) = try await session.data(for: request)
     if let http = response as? HTTPURLResponse, http.statusCode != 200 {
         print("[Error] Image generation failed with status code \(http.statusCode)")
         if let bodyString = String(data: data, encoding: .utf8) {
