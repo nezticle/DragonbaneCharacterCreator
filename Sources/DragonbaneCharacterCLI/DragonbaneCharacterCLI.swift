@@ -1,6 +1,7 @@
 import DragonbaneCharacterCore
 import ArgumentParser
 import Foundation
+import GRDB
 
 struct CharacterSummary: Codable {
     let name: String
@@ -126,8 +127,53 @@ struct DragonbaneCharacterCLI: AsyncParsableCommand {
     /// Print a random saved character from the database and exit.
     @Flag(name: [.short, .long], help: "Print a random saved character from the database and exit.")
     var random: Bool = false
+    /// Print statistics about saved characters and exit.
+    @Flag(name: [.long], help: "Print statistics about saved characters and exit.")
+    var stats: Bool = false
 
+/// Print database statistics to stdout.
+func printStats() throws {
+    // Total characters
+    let total: Int = try DB.queue.read { db in
+        try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM character") ?? 0
+    }
+    print("Total characters: \(total)")
+
+    // Characters by kin (race)
+    let raceRows: [Row] = try DB.queue.read { db in
+        try Row.fetchAll(db, sql: "SELECT race, COUNT(*) AS count FROM character GROUP BY race")
+    }
+    print("By kin:")
+    for row in raceRows {
+        if let race = row["race"] as? String,
+           let count = row["count"] as? Int64 {
+            print("  \(race): \(count)")
+        }
+    }
+
+    // Characters by profession
+    let profRows: [Row] = try DB.queue.read { db in
+        try Row.fetchAll(db, sql: "SELECT profession, COUNT(*) AS count FROM character GROUP BY profession")
+    }
+    print("By profession:")
+    for row in profRows {
+        if let prof = row["profession"] as? String,
+           let count = row["count"] as? Int64 {
+            print("  \(prof): \(count)")
+        }
+    }
+}
     mutating func run() async throws {
+        // Handle --stats mode
+        if stats {
+            do {
+                try printStats()
+            } catch {
+                print("[DB Error] \(error)")
+                throw ExitCode.failure
+            }
+            return
+        }
         // If random flag is set, fetch and display a random character.
         if random {
             do {
