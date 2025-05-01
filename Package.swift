@@ -52,8 +52,7 @@ let package = Package(
             name: "DragonbaneCharacterCLI",
             dependencies: [
                 "DragonbaneCharacterCore",
-                .product(name: "ArgumentParser", package: "swift-argument-parser"),
-                .product(name: "GRDB", package: "GRDB.swift")
+                .product(name: "ArgumentParser", package: "swift-argument-parser")
             ]
         ),
     ]
