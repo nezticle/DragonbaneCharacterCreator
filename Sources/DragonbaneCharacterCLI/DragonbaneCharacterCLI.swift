@@ -129,6 +129,9 @@ struct DragonbaneCharacterCLI: AsyncParsableCommand {
     /// Print statistics about saved characters and exit.
     @Flag(name: [.long], help: "Print statistics about saved characters and exit.")
     var stats: Bool = false
+    /// Generate an image for an existing character by id.
+    @Option(name: [.long], help: "Generate an image for the existing character with the given id.")
+    var imageId: Int?
 
 /// Print database statistics to stdout.
 func printStats() throws {
@@ -175,6 +178,15 @@ func printStats() throws {
         let serverAddress = server ?? ProcessInfo.processInfo.environment["OPENAI_SERVER"] ?? "http://192.168.86.220:1234"
         let openAIKey     = apiKey ?? ProcessInfo.processInfo.environment["OPENAI_API_KEY"] ?? ""
         let openAIModel   = model ?? ProcessInfo.processInfo.environment["OPENAI_MODEL"] ?? "deepseek-r1-distill-qwen-7b"
+        // Handle image generation mode
+        if let id = imageId {
+            do {
+                try await generateAndStoreImage(characterId: Int64(id), server: serverAddress, apiKey: openAIKey)
+            } catch {
+                throw ExitCode.failure
+            }
+            return
+        }
 
         for _ in 0..<count {
             let baseCharacter = generateCharacter()
@@ -307,5 +319,86 @@ func generateStoryStream(for character: Character, server: String, apiKey: Strin
         let task = session.dataTask(with: request)
         task.resume()
         continuation.onTermination = { _ in task.cancel() }
+    }
+}
+/// Generates an image for the given character ID, stores it in the database, and writes to disk.
+func generateAndStoreImage(characterId: Int64, server: String, apiKey: String) async throws {
+    // Fetch the character record
+    let record = try await DB.queue.read { db in
+        try CharacterRecord.fetchOne(db, key: characterId)
+    }
+    guard let rec = record else {
+        print("[Error] No character found with id \(characterId)")
+        return
+    }
+    let character = rec.toCharacter()
+
+    // Build the image generation prompt
+    // Use character description for prompt since properties are internal
+    let prompt = "A highly detailed fantasy portrait of a character based on the following description:\n\(character.description())"
+
+    // Prepare request
+    let urlString = "\(server)/v1/images/generations"
+    guard let url = URL(string: urlString) else {
+        print("[Error] Invalid server URL: \(urlString)")
+        return
+    }
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    if !apiKey.isEmpty {
+        request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+    }
+    request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+    let jsonBody: [String: Any] = [
+        "model": "gpt-image-1",
+        "prompt": prompt,
+        "n": 1,
+        "quality": "high",
+        "output_format": "webp"
+    ]
+    guard let bodyData = try? JSONSerialization.data(withJSONObject: jsonBody) else {
+        print("[Error] Failed to encode request body")
+        return
+    }
+    request.httpBody = bodyData
+
+    // Execute request
+    let (data, response) = try await URLSession.shared.data(for: request)
+    if let http = response as? HTTPURLResponse, http.statusCode != 200 {
+        print("[Error] Image generation failed with status code \(http.statusCode)")
+        if let bodyString = String(data: data, encoding: .utf8) {
+            print("[OpenAI Error Body] \(bodyString)")
+        }
+        return
+    }
+
+    // Parse response
+    guard let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+          let dataArray = json["data"] as? [[String: Any]],
+          let first = dataArray.first,
+          let b64 = first["b64_json"] as? String,
+          let imageData = Data(base64Encoded: b64) else {
+        print("[Error] Unexpected image generation response")
+        return
+    }
+
+    // Use the returned WebP image data directly
+    let imageBlob = imageData
+    let newImageId = try await DB.queue.write { db in
+        var imgRec = ImageRecord(id: nil, characterId: characterId, data: imageBlob)
+        try imgRec.insert(db)
+        return imgRec.id ?? db.lastInsertedRowID
+    }
+    print("[SAVED IMAGE] Stored image record id #\(newImageId) for character #\(characterId)")
+
+    // Write image file to current directory
+    let currentDir = FileManager.default.currentDirectoryPath
+    let fileName = "character_\(characterId)_image_\(newImageId).webp"
+    let fileURL = URL(fileURLWithPath: currentDir).appendingPathComponent(fileName)
+    do {
+        try imageBlob.write(to: fileURL)
+        print("Image written to \(fileURL.path)")
+    } catch {
+        print("[Warning] Failed to write image to disk: \(error)")
     }
 }

@@ -32,6 +32,8 @@ public struct CharacterRecord: Codable, FetchableRecord, PersistableRecord {
     // Tell GRDB the table name to use
     public static let databaseTableName = "character"
 }
+// MARK: - Sendable conformance
+extension CharacterRecord: @unchecked Sendable {}
 
 // Turn a Character into a record ready to save
 public extension Character {

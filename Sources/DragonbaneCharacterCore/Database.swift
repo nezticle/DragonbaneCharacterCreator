@@ -55,6 +55,14 @@ public enum DB {
                 t.column("background", .text).notNull()
             }
         }
+        // Add table for generated character images
+        m.registerMigration("v2_image") { db in
+            try db.create(table: "image") { t in
+                t.autoIncrementedPrimaryKey("id")
+                t.column("characterId", .integer).notNull().indexed()
+                t.column("data", .blob).notNull()
+            }
+        }
 
         return m
     }
