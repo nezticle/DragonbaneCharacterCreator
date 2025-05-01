@@ -123,8 +123,26 @@ struct DragonbaneCharacterCLI: AsyncParsableCommand {
     /// Number of characters to generate (default 1).
     @Option(name: [.short, .long], help: "Number of characters to generate (default 1).")
     var count: Int = 1
+    /// Print a random saved character from the database and exit.
+    @Flag(name: [.short, .long], help: "Print a random saved character from the database and exit.")
+    var random: Bool = false
 
     mutating func run() async throws {
+        // If random flag is set, fetch and display a random character.
+        if random {
+            do {
+                if let rec = try CharacterRecord.fetchRandom() {
+                    let character = rec.toCharacter()
+                    print(character.description())
+                } else {
+                    print("No characters found in database.")
+                }
+            } catch {
+                print("[DB Error] \(error)")
+                throw ExitCode.failure
+            }
+            return
+        }
         // Determine server address and API key from command line or environment.
         let serverAddress = server ?? ProcessInfo.processInfo.environment["OPENAI_SERVER"] ?? "http://192.168.86.220:1234"
         let openAIKey     = apiKey ?? ProcessInfo.processInfo.environment["OPENAI_API_KEY"] ?? ""

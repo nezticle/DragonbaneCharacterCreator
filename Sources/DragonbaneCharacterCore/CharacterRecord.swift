@@ -58,3 +58,30 @@ public extension Character {
                         background: background)
     }
 }
+// Convert a CharacterRecord back to a Character.
+public extension CharacterRecord {
+    /// Convert the record to a Character instance.
+    func toCharacter() -> Character {
+        Character(
+            name: name,
+            race: race,
+            profession: profession,
+            age: age,
+            heroicAbilities: heroicAbilities,
+            trainedSkills: trainedSkills,
+            magic: magic,
+            weakness: weakness,
+            strength: strength,
+            constitution: constitution,
+            agility: agility,
+            intelligence: intelligence,
+            willpower: willpower,
+            charisma: charisma,
+            gear: gear,
+            memento: memento,
+            appearanceSeeds: appearanceSeeds,
+            background: background,
+            appearance: appearance
+        )
+    }
+}

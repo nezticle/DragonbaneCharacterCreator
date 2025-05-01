@@ -73,4 +73,10 @@ public extension CharacterRecord {
     static func fetchAll() throws -> [CharacterRecord] {
         try DB.queue.read { db in try CharacterRecord.fetchAll(db) }
     }
+    /// Fetch a random saved character record from the database.
+    static func fetchRandom() throws -> CharacterRecord? {
+        try DB.queue.read { db in
+            try CharacterRecord.fetchOne(db, sql: "SELECT * FROM character ORDER BY RANDOM() LIMIT 1")
+        }
+    }
 }
