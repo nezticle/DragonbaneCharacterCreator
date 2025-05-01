@@ -129,6 +129,9 @@ struct DragonbaneCharacterCLI: AsyncParsableCommand {
     /// Print statistics about saved characters and exit.
     @Flag(name: [.long], help: "Print statistics about saved characters and exit.")
     var stats: Bool = false
+    /// Print a saved character by id and exit.
+    @Option(name: [.long], help: "Print the character description for the given id and exit.")
+    var printId: Int?
     /// Generate an image for an existing character by id.
     @Option(name: [.long], help: "Generate an image for the existing character with the given id.")
     var imageId: Int?
@@ -167,6 +170,24 @@ func printStats() throws {
                     print(character.description())
                 } else {
                     print("No characters found in database.")
+                }
+            } catch {
+                print("[DB Error] \(error)")
+                throw ExitCode.failure
+            }
+            return
+        }
+        // Handle print-by-id mode
+        if let id = printId {
+            do {
+                let record = try await DB.queue.read { db in
+                    try CharacterRecord.fetchOne(db, key: Int64(id))
+                }
+                if let rec = record {
+                    let character = rec.toCharacter()
+                    print(character.description())
+                } else {
+                    print("No character found with id \(id)")
                 }
             } catch {
                 print("[DB Error] \(error)")
