@@ -46,6 +46,10 @@ let package = Package(
                 .copy("appearance_orc.txt"),
                 .copy("appearance_satyr.txt"),
                 .copy("appearance_wolfkin.txt")
+            ],
+            swiftSettings: [
+                // Disable strict concurrency checks in release builds for GRDB
+                .unsafeFlags(["-Xfrontend", "-strict-concurrency=targeted"], .when(configuration: .release))
             ]
         ),
         .executableTarget(
@@ -53,6 +57,10 @@ let package = Package(
             dependencies: [
                 "DragonbaneCharacterCore",
                 .product(name: "ArgumentParser", package: "swift-argument-parser")
+            ],
+            swiftSettings: [
+                // Disable strict concurrency checks in release builds
+                .unsafeFlags(["-Xfrontend", "-strict-concurrency=targeted"], .when(configuration: .release))
             ]
         ),
     ]
