@@ -7,15 +7,18 @@ on:
 
 jobs:
   build-macos:
-    runs-on: macos-latest
+    runs-on: macos-15
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup Swift
-        uses: swift-actions/setup-swift@v2
-        with:
-          swift-version: '6.1'
+      - name: Select Xcode 16
+        run: sudo xcode-select -s /Applications/Xcode_16.3.app
+
+      # - name: Setup Swift
+      #   uses: swift-actions/setup-swift@v2
+      #   with:
+      #     swift-version: '6.1'
 
       - name: Build Release (macOS)
         run: swift build -c release
