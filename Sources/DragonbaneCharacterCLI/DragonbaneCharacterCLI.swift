@@ -75,15 +75,13 @@ final class OpenAIStreamDelegate: NSObject, URLSessionDataDelegate, @unchecked S
     }
 }
 
-struct DragonbaneCharacterCLI: ParsableCommand {
+@main
+struct DragonbaneCharacterCLI: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         abstract: "A command-line tool for generating Dragonbane characters.",
         discussion: "In interactive mode, you can enter commands to generate characters, view help, or exit.",
         version: "1.0.0"
     )
-
-    @Flag(name: [.short, .long], help: "Run in interactive mode.")
-    var interactive: Bool = false
 
     @Option(name: [.short, .long], help: "Server address for /v1/chat/completions calls. Can be overridden by the OPENAI_SERVER environment variable.")
     var server: String?
@@ -94,86 +92,70 @@ struct DragonbaneCharacterCLI: ParsableCommand {
     @Option(name: [.short, .long], help: "Model for /v1/chat/completions calls. Can be overridden by the OPENAI_MODEL environment variable.")
     var model: String?
 
-    mutating func run() throws {
+    /// Number of characters to generate (default 1).
+    @Option(name: [.short, .long], help: "Number of characters to generate (default 1).")
+    var count: Int = 1
+
+    mutating func run() async throws {
         // Determine server address and API key from command line or environment.
         let serverAddress = server ?? ProcessInfo.processInfo.environment["OPENAI_SERVER"] ?? "http://192.168.86.220:1234"
-        let openAIKey = apiKey ?? ProcessInfo.processInfo.environment["OPENAI_API_KEY"] ?? ""
-        let openAIModel = model ?? ProcessInfo.processInfo.environment["OPENAI_MODEL"] ?? "deepseek-r1-distill-qwen-7b"
+        let openAIKey     = apiKey ?? ProcessInfo.processInfo.environment["OPENAI_API_KEY"] ?? ""
+        let openAIModel   = model ?? ProcessInfo.processInfo.environment["OPENAI_MODEL"] ?? "deepseek-r1-distill-qwen-7b"
 
-        if interactive {
-            runInteractiveMode(serverAddress: serverAddress, openAIKey: openAIKey, openAIModel: openAIModel)
-        } else {
-            let newCharacter = generateCharacter()
-            print(newCharacter.description())
-        }
-    }
-
-    // Interactive loop function
-    func runInteractiveMode(serverAddress: String, openAIKey: String, openAIModel: String) {
-        print("Entering interactive mode. Type 'help' for commands, and 'quit' or 'exit' to exit.")
-        while true {
-            print("Command:", terminator: " ")
-            guard let input = readLine()?.trimmingCharacters(in: .whitespacesAndNewlines), !input.isEmpty else {
-                continue
-            }
-            let lowerInput = input.lowercased()
-            if lowerInput == "quit" || lowerInput == "exit" {
-                print("Exiting interactive mode.")
-                break
-            } else if lowerInput == "help" {
-                print("Available commands:")
-                print("  generate  - Generate a new character")
-                print("  story     - Generate story for current character")
-                print("  help      - Show this help message")
-                print("  quit/exit - Exit interactive mode")
-            } else if lowerInput == "generate" {
-                let newCharacter = generateCharacter()
-                print(newCharacter.description())
-            } else if lowerInput == "story" {
-                print("Generating story for current character...")
-                var currentCharacter = generateCharacter()
-                // Block interactive prompt until story is done.
-                let semaphore = DispatchSemaphore(value: 0)
-                Task {
-                    var rawBuffer: String = " "
-                    for await token in generateStoryStream(for: currentCharacter, server: serverAddress, apiKey: openAIKey, model: openAIModel) {
-                        // Print each token as it is received.
-                        print(token, terminator: "")
-                        rawBuffer += token
-                    }
-
-                    // if the response is valid JSON, update the character
-                    if let summary = parseSummary(from: rawBuffer) {
-                        // Update the character with the generated summary
-                        currentCharacter.setName(String(summary.name))
-                        currentCharacter.setAppearance(String(summary.appearance))
-                        currentCharacter.setBackground(String(summary.background))
-                        print(currentCharacter.description())
-                        do {
-                            var rec = currentCharacter.record
-                            let id = try rec.save()
-                            print("\n[SAVED] Character stored with id #\(id)")
-                        } catch {
-                            print("\n[DB Error] \(error)")
-                        }
-                    } else {
-                        print("\n\nFailed to parse character summary.")
-                    }
-
-                    print("\nStory complete.")
-                    semaphore.signal()
-                }
-                // Wait for the Task to complete before continuing interactive loop.
-                // (In this simple implementation, the interactive prompt won't return until the Task finishes.)
-                // You can extend this later to support cancellation.
-                semaphore.wait()
-            } else {
-                print("Unknown command. Type 'help' to see available commands.")
+        for _ in 0..<count {
+            let baseCharacter = generateCharacter()
+            do {
+                _ = try await generateAndStore(character: baseCharacter,
+                                               server: serverAddress,
+                                               apiKey: openAIKey,
+                                               model: openAIModel)
+            } catch {
+                // `generateAndStore` prints its own error details.
+                throw ExitCode.failure
             }
         }
     }
+
 }
 
+/// Generates name, appearance, and background via the LLM, streams the output,
+/// updates and saves the character, and returns the updated instance.
+func generateAndStore(character: Character,
+                      server: String,
+                      apiKey: String,
+                      model: String) async throws -> Character {
+    var currentCharacter = character
+    var rawBuffer = ""
+
+    for await token in generateStoryStream(for: currentCharacter,
+                                           server: server,
+                                           apiKey: apiKey,
+                                           model: model) {
+        print(token, terminator: "")
+        rawBuffer += token
+    }
+
+    guard let summary = parseSummary(from: rawBuffer) else {
+        throw NSError(domain: "DragonbaneCharacterCLI",
+                      code: 1,
+                      userInfo: [NSLocalizedDescriptionKey: "Failed to parse character summary"])
+    }
+
+    currentCharacter.setName(summary.name)
+    currentCharacter.setAppearance(summary.appearance)
+    currentCharacter.setBackground(summary.background)
+
+    do {
+        var rec = currentCharacter.record
+        let id = try rec.save()
+        print("\n[SAVED] Character stored with id #\(id)")
+    } catch {
+        print("\n[DB Error] \(error)")
+        throw error
+    }
+
+    return currentCharacter
+}
 func generateStoryStream(for character: Character, server: String, apiKey: String, model: String) -> AsyncStream<String> {
     AsyncStream { continuation in
         guard let url = URL(string: "\(server)/v1/chat/completions") else {
@@ -242,5 +224,3 @@ func generateStoryStream(for character: Character, server: String, apiKey: Strin
         continuation.onTermination = { _ in task.cancel() }
     }
 }
-
-DragonbaneCharacterCLI.main()

@@ -11,7 +11,7 @@ public enum DB {
         try? FileManager.default.createDirectory(at: root,
                                                  withIntermediateDirectories: true)
         let dbPath = root.appendingPathComponent("dragonbane.sqlite").path
-        print ("DB path: \(dbPath)")
+        //print ("DB path: \(dbPath)")
 
         // ❷ Create queue and run migrations
         do {
