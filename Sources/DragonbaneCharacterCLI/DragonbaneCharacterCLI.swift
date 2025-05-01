@@ -198,37 +198,48 @@ func generateAndStore(character: Character,
                       server: String,
                       apiKey: String,
                       model: String) async throws -> Character {
-    var currentCharacter = character
-    var rawBuffer = ""
+    let originalCharacter = character
 
-    for await token in generateStoryStream(for: currentCharacter,
-                                           server: server,
-                                           apiKey: apiKey,
-                                           model: model) {
-        print(token, terminator: "")
-        rawBuffer += token
+    for attempt in 1...3 {
+        var currentCharacter = originalCharacter
+        var rawBuffer = ""
+
+        for await token in generateStoryStream(for: originalCharacter,
+                                               server: server,
+                                               apiKey: apiKey,
+                                               model: model) {
+            print(token, terminator: "")
+            rawBuffer += token
+        }
+
+        if let summary = parseSummary(from: rawBuffer) {
+            currentCharacter.setName(summary.name)
+            currentCharacter.setAppearance(summary.appearance)
+            currentCharacter.setBackground(summary.background)
+
+            do {
+                var rec = currentCharacter.record
+                let id = try rec.save()
+                print("\n[SAVED] Character stored with id #\(id)")
+            } catch {
+                print("\n[DB Error] \(error)")
+                throw error
+            }
+
+            return currentCharacter
+        } else {
+            print("\n[Warning] Failed to parse character summary (attempt \(attempt) of 3)")
+            if attempt == 3 {
+                throw NSError(domain: "DragonbaneCharacterCLI",
+                              code: 1,
+                              userInfo: [NSLocalizedDescriptionKey: "Failed to parse character summary after 3 attempts"])
+            }
+        }
     }
-
-    guard let summary = parseSummary(from: rawBuffer) else {
-        throw NSError(domain: "DragonbaneCharacterCLI",
-                      code: 1,
-                      userInfo: [NSLocalizedDescriptionKey: "Failed to parse character summary"])
-    }
-
-    currentCharacter.setName(summary.name)
-    currentCharacter.setAppearance(summary.appearance)
-    currentCharacter.setBackground(summary.background)
-
-    do {
-        var rec = currentCharacter.record
-        let id = try rec.save()
-        print("\n[SAVED] Character stored with id #\(id)")
-    } catch {
-        print("\n[DB Error] \(error)")
-        throw error
-    }
-
-    return currentCharacter
+    // Should not reach here
+    throw NSError(domain: "DragonbaneCharacterCLI",
+                  code: 1,
+                  userInfo: [NSLocalizedDescriptionKey: "Unexpected error in generateAndStore"])
 }
 func generateStoryStream(for character: Character, server: String, apiKey: String, model: String) -> AsyncStream<String> {
     AsyncStream { continuation in
