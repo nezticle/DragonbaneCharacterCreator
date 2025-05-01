@@ -34,6 +34,22 @@ final class OpenAIStreamDelegate: NSObject, URLSessionDataDelegate, @unchecked S
     var onToken: ((String) -> Void)?
     var onCompletion: (() -> Void)?
     private var buffer = Data()
+    /// HTTP status code for the response, if known.
+    private var statusCode: Int?
+
+    /// Captures the initial HTTP response so we can surface non‑200 problems early.
+    func urlSession(_ session: URLSession,
+                    dataTask: URLSessionDataTask,
+                    didReceive response: URLResponse,
+                    completionHandler: @escaping (URLSession.ResponseDisposition) -> Void) {
+        if let http = response as? HTTPURLResponse {
+            statusCode = http.statusCode
+            if http.statusCode != 200 {
+                print("\n[HTTP Error] Response status code: \(http.statusCode)")
+            }
+        }
+        completionHandler(.allow)
+    }
 
     func urlSession(_ session: URLSession,
                 task: URLSessionTask,
@@ -45,10 +61,22 @@ final class OpenAIStreamDelegate: NSObject, URLSessionDataDelegate, @unchecked S
         if let error = error {
             print("\n[Error] Story generation failed: \(error.localizedDescription)")
         }
+        // Surface HTTP‑level errors that did not raise a URL error.
+        if let code = statusCode, code != 200 {
+            print("[Error] Request finished with HTTP status \(code)")
+        }
         onCompletion?()  // signal the semaphore
     }
 
     func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+        // If we already know the request failed, dump the body and stop parsing for tokens.
+        if let code = statusCode, code != 200 {
+            if let body = String(data: data, encoding: .utf8) {
+                print("\n[OpenAI Error Body] \(body)")
+            }
+            buffer.removeAll()
+            return
+        }
         buffer.append(data)
         if let text = String(data: buffer, encoding: .utf8) {
             let lines = text.split(separator: "\n")
