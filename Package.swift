@@ -57,7 +57,8 @@ let package = Package(
             name: "DragonbaneCharacterPersistence",
             dependencies: [
                 "DragonbaneCharacterCore",
-                .product(name: "GRDB", package: "GRDB.swift")
+                .product(name: "GRDB", package: "GRDB.swift"),
+                "SQLiteSnapshotShims",
             ]
         ),
         .executableTarget(
@@ -67,6 +68,10 @@ let package = Package(
                 "DragonbaneCharacterPersistence",
                 .product(name: "ArgumentParser", package: "swift-argument-parser")
             ]
+        ),
+        .target(
+            name: "SQLiteSnapshotShims",
+            dependencies: []
         ),
         .executableTarget(
             name: "DragonbaneCharacterServer",

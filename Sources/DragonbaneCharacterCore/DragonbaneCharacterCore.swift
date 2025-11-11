@@ -670,6 +670,46 @@ public struct Character: Sendable {
     public var background: String
     public var appearance: String
 
+    public init(name: String,
+                race: Race,
+                profession: Profession,
+                age: Age,
+                heroicAbilities: [HeroicAbilities],
+                trainedSkills: [Skills],
+                magic: [String],
+                weakness: String,
+                strength: Int,
+                constitution: Int,
+                agility: Int,
+                intelligence: Int,
+                willpower: Int,
+                charisma: Int,
+                gear: [String],
+                memento: String,
+                appearanceSeeds: [String],
+                background: String,
+                appearance: String) {
+        self.name = name
+        self.race = race
+        self.profession = profession
+        self.age = age
+        self.heroicAbilities = heroicAbilities
+        self.trainedSkills = trainedSkills
+        self.magic = magic
+        self.weakness = weakness
+        self.strength = strength
+        self.constitution = constitution
+        self.agility = agility
+        self.intelligence = intelligence
+        self.willpower = willpower
+        self.charisma = charisma
+        self.gear = gear
+        self.memento = memento
+        self.appearanceSeeds = appearanceSeeds
+        self.background = background
+        self.appearance = appearance
+    }
+
     public func description() -> String {
         return """
         ---- Dragonbane Character ----

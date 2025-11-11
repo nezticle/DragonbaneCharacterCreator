@@ -2,6 +2,9 @@ import DragonbaneCharacterCore
 import DragonbaneCharacterPersistence
 import ArgumentParser
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 struct CharacterSummary: Codable {
     let name: String
