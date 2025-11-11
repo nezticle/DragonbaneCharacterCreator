@@ -1,4 +1,4 @@
-// swift-tools-version: 6.1
+// swift-tools-version: 6.0
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -13,6 +13,10 @@ let package = Package(
             name: "DragonbaneCharacterCore",
             targets: ["DragonbaneCharacterCore"]
         ),
+        .library(
+            name: "DragonbaneCharacterPersistence",
+            targets: ["DragonbaneCharacterPersistence"]
+        ),
         .executable(
             name: "DragonbaneCharacterCLI",
             targets: ["DragonbaneCharacterCLI"]
@@ -20,14 +24,15 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.2.0"),
-        .package(url: "https://github.com/groue/GRDB.swift.git", from: "7.4.1")
+        .package(url: "https://github.com/groue/GRDB.swift.git", from: "7.4.1"),
+        .package(url: "https://github.com/vapor/vapor.git", from: "4.92.2"),
+        .package(url: "https://github.com/vapor/fluent.git", from: "4.9.0"),
+        .package(url: "https://github.com/vapor/fluent-postgres-driver.git", from: "2.10.0")
     ],
     targets: [
         .target(
             name: "DragonbaneCharacterCore",
-            dependencies: [
-                .product(name: "GRDB", package: "GRDB.swift")
-            ],
+            dependencies: [],
             resources: [
                 .copy("weaknesses.txt"),
                 .copy("mementos.txt"),
@@ -48,11 +53,31 @@ let package = Package(
                 .copy("appearance_wolfkin.txt")
             ]
         ),
+        .target(
+            name: "DragonbaneCharacterPersistence",
+            dependencies: [
+                "DragonbaneCharacterCore",
+                .product(name: "GRDB", package: "GRDB.swift")
+            ]
+        ),
         .executableTarget(
             name: "DragonbaneCharacterCLI",
             dependencies: [
                 "DragonbaneCharacterCore",
+                "DragonbaneCharacterPersistence",
                 .product(name: "ArgumentParser", package: "swift-argument-parser")
+            ]
+        ),
+        .executableTarget(
+            name: "DragonbaneCharacterServer",
+            dependencies: [
+                "DragonbaneCharacterCore",
+                .product(name: "Vapor", package: "vapor"),
+                .product(name: "Fluent", package: "fluent"),
+                .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver")
+            ],
+            resources: [
+                .copy("Public")
             ]
         ),
     ]

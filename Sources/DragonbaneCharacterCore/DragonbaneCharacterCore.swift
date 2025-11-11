@@ -1,7 +1,7 @@
 import Foundation
 
 // Define available races for your characters.
-enum Race: String, Codable, CaseIterable {
+public enum Race: String, Codable, CaseIterable, Sendable {
     case human = "Human"                    // Adaptive
     case halfling = "Halfling"              // Hard to Catch
     case dwarf = "Dwarf"                    // Unforving
@@ -99,7 +99,7 @@ func selectKin() -> Race {
 }
 
 // Define available character classes for your characters.
-enum Profession: String, Codable, CaseIterable {
+public enum Profession: String, Codable, CaseIterable, Sendable {
     case artisan = "Artisan"
     case bard = "Bard"
     case fighter = "Fighter"
@@ -166,7 +166,7 @@ extension Profession {
     }
 }
 
-enum Skills: String, Codable, CaseIterable {
+public enum Skills: String, Codable, CaseIterable, Sendable {
     case acrobatics = "Acrobatics"
     case awareness = "Awareness"
     case bartering = "Bartering"
@@ -199,7 +199,7 @@ enum Skills: String, Codable, CaseIterable {
     case swords = "Swords"
 }
 
-enum HeroicAbilities: String, Codable, CaseIterable {
+public enum HeroicAbilities: String, Codable, CaseIterable, Sendable {
     case assassin = "Assassin"
     case backstabbing = "Backstabbing"
     case battlecry = "Battle Cry"
@@ -262,7 +262,7 @@ enum HeroicAbilities: String, Codable, CaseIterable {
     case raisespirits = "Raise Spirits" // satyr
 }
 
-enum Attributes: String, CaseIterable {
+public enum Attributes: String, CaseIterable, Sendable {
     case str = "Strength"
     case con = "Constitution"
     case agl = "Agility"
@@ -271,7 +271,7 @@ enum Attributes: String, CaseIterable {
     case cha = "Charisma"
 }
 
-enum Age : String, Codable, CaseIterable {
+public enum Age : String, Codable, CaseIterable, Sendable {
     // Normally a D6 roll
     case young = "Young"    // 1-3, Trained skills +2, AGL and CON + 1
     case adult = "Adult"    // 4-5, Trained skills +4, AGL and CON + 0
@@ -649,26 +649,26 @@ func rollGear(profession : Profession) -> [String] {
 
 // Define the structure for a Dragonbane character.
 // You can include additional properties or change the set of abilities based on your game rules.
-public struct Character {
-    var name: String
-    var race: Race
-    var profession: Profession
-    var age: Age
-    var heroicAbilities: [HeroicAbilities]
-    var trainedSkills: [Skills]
-    var magic: [String]
-    var weakness: String
-    var strength: Int
-    var constitution: Int
-    var agility: Int
-    var intelligence: Int
-    var willpower: Int
-    var charisma: Int
-    var gear: [String]
-    var memento: String
-    var appearanceSeeds: [String]
-    var background: String
-    var appearance: String
+public struct Character: Sendable {
+    public var name: String
+    public var race: Race
+    public var profession: Profession
+    public var age: Age
+    public var heroicAbilities: [HeroicAbilities]
+    public var trainedSkills: [Skills]
+    public var magic: [String]
+    public var weakness: String
+    public var strength: Int
+    public var constitution: Int
+    public var agility: Int
+    public var intelligence: Int
+    public var willpower: Int
+    public var charisma: Int
+    public var gear: [String]
+    public var memento: String
+    public var appearanceSeeds: [String]
+    public var background: String
+    public var appearance: String
 
     public func description() -> String {
         return """
@@ -727,7 +727,7 @@ public struct Character {
 }
 
 // Generate a random character name from a predefined list.
-func generateName() -> String {
+public func generateName() -> String {
     let names = ["Aragorn", "Baldur", "Celeste", "Darian", "Elora", "Fendrel", "Garen", "Helena", "Ivor", "Jora"]
     return names.randomElement() ?? "Hero"
 }
@@ -816,6 +816,74 @@ public func generateCharacter() -> Character {
     newCharacter.weakness = selectWeakness()
 
     return newCharacter
+}
+
+/// Creates a flavorful but offline-friendly appearance description from the character's seeds.
+public func synthesizeAppearanceDescription(for character: Character) -> String {
+    let sanitizedSeeds = character.appearanceSeeds
+        .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+        .filter { !$0.isEmpty }
+
+    if sanitizedSeeds.isEmpty {
+        return "A typical \(character.race.rawValue.lowercased()) adventurer dressed for the road."
+            .capitalizedSentence()
+    }
+
+    let sentences = sanitizedSeeds.map { seed -> String in
+        let sentence = seed.capitalizedSentence()
+        return sentence.hasSuffix(".") ? sentence : sentence + "."
+    }
+
+    return sentences.joined(separator: " ")
+}
+
+/// Produces a light-weight background paragraph without relying on remote services.
+public func synthesizeBackground(for character: Character) -> String {
+    let race = character.race.rawValue
+    let profession = character.profession.rawValue.lowercased()
+    let age = character.age.rawValue.lowercased()
+    let focusSkills = character.trainedSkills.prefix(3).map { $0.rawValue.lowercased() }
+    let skillsText: String
+    if focusSkills.isEmpty {
+        skillsText = "versatile talents"
+    } else if focusSkills.count == 1 {
+        skillsText = focusSkills[0]
+    } else {
+        let head = focusSkills.dropLast().joined(separator: ", ")
+        skillsText = head + " and " + (focusSkills.last ?? "versatility")
+    }
+
+    let weakness = character.weakness.lowercased()
+    let memento = character.memento.lowercased()
+    let hook = "Keeps \(memento) close as a reminder of past trials."
+
+    return "A \(age) \(race.lowercased()) \(profession) known for \(skillsText). \(character.race.rawValue) traditions shape their outlook, yet they wrestle with \(weakness). \(hook)"
+        .capitalizedSentence()
+}
+
+/// Generates a complete character with offline-friendly narrative fields populated.
+public func generateCompleteCharacter() -> Character {
+    var character = generateCharacter()
+    if character.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        character.setName(generateName())
+    }
+    if character.appearance.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        character.setAppearance(synthesizeAppearanceDescription(for: character))
+    }
+    if character.background.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        character.setBackground(synthesizeBackground(for: character))
+    }
+    return character
+}
+
+fileprivate extension String {
+    func capitalizedSentence() -> String {
+        let trimmed = self.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let first = trimmed.first else { return self }
+        let leading = String(first).uppercased()
+        let trailing = trimmed.dropFirst()
+        return leading + trailing
+    }
 }
 
 func generateAttributes(for profession: Profession, age: Age) -> [Attributes: Int] {

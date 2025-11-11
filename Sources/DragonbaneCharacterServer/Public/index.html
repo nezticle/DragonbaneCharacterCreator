@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dragonbane Character Service</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <header>
+        <h1>Dragonbane Character Service</h1>
+        <p>Generate, retrieve, and edit characters from the Dragonbane roster.</p>
+    </header>
+    <main>
+        <section>
+            <h2>Retrieve a Random Character</h2>
+            <form id="randomForm" class="card">
+                <div class="field">
+                    <label for="randomKin">Kin filters</label>
+                    <select id="randomKin" multiple></select>
+                    <small>Select one or more kin to limit the random draw.</small>
+                </div>
+                <div class="field">
+                    <label for="randomProfession">Profession filters</label>
+                    <select id="randomProfession" multiple></select>
+                </div>
+                <button type="submit">Fetch Character</button>
+            </form>
+            <div id="randomResult" class="card result"></div>
+        </section>
+
+        <section>
+            <h2>Generate a New Character</h2>
+            <form id="generateForm" class="card">
+                <div class="field">
+                    <label for="generateKin">Preferred kin</label>
+                    <select id="generateKin">
+                        <option value="">Any</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="generateProfession">Preferred profession</label>
+                    <select id="generateProfession">
+                        <option value="">Any</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="generateAge">Preferred age</label>
+                    <select id="generateAge">
+                        <option value="">Any</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="generateName">Override name (optional)</label>
+                    <input id="generateName" type="text" placeholder="Character name">
+                </div>
+                <div class="field">
+                    <label for="generateAppearance">Override appearance (optional)</label>
+                    <textarea id="generateAppearance" rows="2" placeholder="Describe the character"></textarea>
+                </div>
+                <div class="field">
+                    <label for="generateBackground">Override background (optional)</label>
+                    <textarea id="generateBackground" rows="2" placeholder="Provide a background"></textarea>
+                </div>
+                <button type="submit">Generate &amp; Save</button>
+            </form>
+            <div id="generateResult" class="card result"></div>
+        </section>
+
+        <section>
+            <h2>Edit an Existing Character</h2>
+            <form id="editSelector" class="card">
+                <div class="field">
+                    <label for="editCharacter">Select character</label>
+                    <select id="editCharacter">
+                        <option value="">Choose a saved character</option>
+                    </select>
+                </div>
+            </form>
+            <form id="editForm" class="card hidden">
+                <div class="field">
+                    <label for="editName">Name</label>
+                    <input id="editName" type="text" required>
+                </div>
+                <div class="field">
+                    <label for="editAppearance">Appearance</label>
+                    <textarea id="editAppearance" rows="3" required></textarea>
+                </div>
+                <div class="field">
+                    <label for="editBackground">Background</label>
+                    <textarea id="editBackground" rows="3" required></textarea>
+                </div>
+                <div class="field">
+                    <label for="editWeakness">Weakness</label>
+                    <input id="editWeakness" type="text" required>
+                </div>
+                <div class="field">
+                    <label for="editMemento">Memento</label>
+                    <input id="editMemento" type="text" required>
+                </div>
+                <div class="field">
+                    <label for="editGear">Gear (comma separated)</label>
+                    <textarea id="editGear" rows="2"></textarea>
+                </div>
+                <button type="submit">Save Changes</button>
+            </form>
+            <div id="editStatus" class="card result"></div>
+        </section>
+    </main>
+    <script src="/app.js" defer></script>
+</body>
+</html>

@@ -1,32 +1,33 @@
+import DragonbaneCharacterCore
 import GRDB
 
 public struct CharacterRecord: Codable, FetchableRecord, PersistableRecord {
-    var id: Int64?
+    public var id: Int64?
 
-    var name: String
-    var race: Race
-    var profession: Profession
-    var age: Age
+    public var name: String
+    public var race: Race
+    public var profession: Profession
+    public var age: Age
 
-    var strength: Int
-    var constitution: Int
-    var agility: Int
-    var intelligence: Int
-    var willpower: Int
-    var charisma: Int
+    public var strength: Int
+    public var constitution: Int
+    public var agility: Int
+    public var intelligence: Int
+    public var willpower: Int
+    public var charisma: Int
 
     // arrays → JSON in one TEXT column
-    var heroicAbilities: [HeroicAbilities]
-    var trainedSkills: [Skills]
-    var magic: [String]
-    var gear: [String]
-    var appearanceSeeds: [String]
+    public var heroicAbilities: [HeroicAbilities]
+    public var trainedSkills: [Skills]
+    public var magic: [String]
+    public var gear: [String]
+    public var appearanceSeeds: [String]
 
     // small scalars
-    var weakness: String
-    var memento: String
-    var appearance: String
-    var background: String
+    public var weakness: String
+    public var memento: String
+    public var appearance: String
+    public var background: String
 
 
     // Tell GRDB the table name to use

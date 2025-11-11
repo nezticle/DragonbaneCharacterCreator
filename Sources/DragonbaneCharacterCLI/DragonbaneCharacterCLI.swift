@@ -1,4 +1,5 @@
 import DragonbaneCharacterCore
+import DragonbaneCharacterPersistence
 import ArgumentParser
 import Foundation
 

@@ -1,3 +1,4 @@
+import DragonbaneCharacterCore
 import Foundation
 import GRDB
 
