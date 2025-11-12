@@ -62,6 +62,28 @@
                     <label for="generateBackground">Override background (optional)</label>
                     <textarea id="generateBackground" rows="2" placeholder="Provide a background"></textarea>
                 </div>
+                <div class="field">
+                    <label for="generateNarrativeMode">Narrative detail source</label>
+                    <select id="generateNarrativeMode">
+                        <option value="offline" selected>Offline (fastest)</option>
+                        <option value="flyndre">Local LLM (flyndre.local)</option>
+                        <option value="openai">OpenAI</option>
+                        <option value="custom">Custom endpoint</option>
+                    </select>
+                    <small>Using an LLM enriches names, appearance, and background but can take noticeably longer.</small>
+                </div>
+                <div class="field hidden" id="llmServerGroup">
+                    <label for="llmServer">LLM server URL</label>
+                    <input id="llmServer" type="text" value="http://flyndre.local:1234" placeholder="https://api.openai.com" autocomplete="off">
+                </div>
+                <div class="field hidden" id="llmModelGroup">
+                    <label for="llmModel">LLM model</label>
+                    <input id="llmModel" type="text" value="deepseek-r1-distill-qwen-7b" placeholder="gpt-4o-mini" autocomplete="off">
+                </div>
+                <div class="field hidden" id="llmKeyGroup">
+                    <label for="llmApiKey">API key (stored locally in your browser)</label>
+                    <input id="llmApiKey" type="password" placeholder="sk-..." autocomplete="off">
+                </div>
                 <button type="submit">Generate &amp; Save</button>
             </form>
             <div id="generateResult" class="card result"></div>

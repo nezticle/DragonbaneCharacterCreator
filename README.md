@@ -41,6 +41,8 @@ The CLI is configured via command-line flags or environment variables:
 
 The `DragonbaneCharacterServer` target exposes a REST API and static web UI for managing characters without invoking the OpenAI-powered embellishment pipeline. Characters generated through the service rely on the offline narrative helpers added to `DragonbaneCharacterCore`.
 
+The UI also exposes an optional "LLM" path for richer names, backgrounds, and appearance text. When enabled it calls a `/v1/chat/completions`-compatible endpoint (defaulting to `http://flyndre.local:1234`, configurable via `LLM_SERVER`/`LLM_MODEL`) and applies the returned summary unless the user specified overrides. Selecting the OpenAI option reveals an API-key input so each browser session can supply its own credentials.
+
 ### Quick start with Docker/Podman Compose
 
 ```bash

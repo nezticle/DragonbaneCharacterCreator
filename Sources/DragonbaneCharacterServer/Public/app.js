@@ -32,6 +32,16 @@ const professionOptions = [
 ];
 
 const ageOptions = ["Young", "Adult", "Old"];
+const LLM_DEFAULTS = {
+  flyndre: {
+    server: "http://flyndre.local:1234",
+    model: "deepseek-r1-distill-qwen-7b"
+  },
+  openai: {
+    server: "https://api.openai.com",
+    model: "gpt-4o-mini"
+  }
+};
 
 document.addEventListener("DOMContentLoaded", () => {
   populateSelect(document.getElementById("randomKin"), kinOptions, true);
@@ -40,6 +50,11 @@ document.addEventListener("DOMContentLoaded", () => {
   populateSelect(document.getElementById("generateProfession"), professionOptions);
   populateSelect(document.getElementById("generateAge"), ageOptions);
   loadCharacterList();
+  const narrativeSelect = document.getElementById("generateNarrativeMode");
+  if (narrativeSelect) {
+    narrativeSelect.addEventListener("change", handleNarrativeModeChange);
+    handleNarrativeModeChange();
+  }
 
   document.getElementById("randomForm").addEventListener("submit", handleRandomSubmit);
   document.getElementById("generateForm").addEventListener("submit", handleGenerateSubmit);
@@ -62,6 +77,25 @@ function populateSelect(select, options, isMultiple = false) {
 
 function selectedValues(select) {
   return Array.from(select.selectedOptions).map((opt) => opt.value);
+}
+
+function handleNarrativeModeChange() {
+  const mode = document.getElementById("generateNarrativeMode").value;
+  const showLLMFields = mode !== "offline";
+  toggleField("llmServerGroup", showLLMFields);
+  toggleField("llmModelGroup", showLLMFields);
+  toggleField("llmKeyGroup", mode === "openai" || mode === "custom");
+
+  if (mode !== "custom" && mode !== "offline" && LLM_DEFAULTS[mode]) {
+    document.getElementById("llmServer").value = LLM_DEFAULTS[mode].server;
+    document.getElementById("llmModel").value = LLM_DEFAULTS[mode].model;
+  }
+}
+
+function toggleField(id, show) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.toggle("hidden", !show);
 }
 
 async function handleRandomSubmit(event) {
@@ -106,7 +140,24 @@ async function handleGenerateSubmit(event) {
   if (background) payload.background = background;
 
   const resultContainer = document.getElementById("generateResult");
-  resultContainer.textContent = "Generating character...";
+  const narrativeMode = document.getElementById("generateNarrativeMode").value;
+  const useLLM = narrativeMode !== "offline";
+  if (useLLM) {
+    payload.narrativeMode = "llm";
+    const server = document.getElementById("llmServer").value.trim();
+    const model = document.getElementById("llmModel").value.trim();
+    const apiKey = document.getElementById("llmApiKey").value.trim();
+    if (server) payload.llmServer = server;
+    if (model) payload.llmModel = model;
+    if (narrativeMode === "openai" && !apiKey) {
+      setStatus(resultContainer, "OpenAI requests require an API key.");
+      return;
+    }
+    if (apiKey) payload.llmApiKey = apiKey;
+    setBusy(resultContainer, "Generating detailed narrative via LLM...");
+  } else {
+    setBusy(resultContainer, "Generating character...");
+  }
 
   try {
     const response = await fetch("/api/characters/generate", {
@@ -122,7 +173,7 @@ async function handleGenerateSubmit(event) {
     renderCharacter(resultContainer, character);
     await loadCharacterList();
   } catch (error) {
-    resultContainer.textContent = error.message;
+    setStatus(resultContainer, error.message);
   }
 }
 
@@ -238,6 +289,7 @@ function parseList(value) {
 }
 
 function renderCharacter(container, character) {
+  container.classList.remove("loading");
   const lines = [];
   lines.push(`Name: ${character.name}`);
   lines.push(`Kin: ${character.race}`);
@@ -255,6 +307,18 @@ function renderCharacter(container, character) {
   lines.push(`Appearance: ${character.appearance}`);
   lines.push(`Background: ${character.background}`);
   container.textContent = lines.join("\n");
+}
+
+function setBusy(element, message) {
+  if (!element) return;
+  element.classList.add("loading");
+  element.innerHTML = `<div class="spinner" aria-hidden="true"></div><span>${message}</span>`;
+}
+
+function setStatus(element, message) {
+  if (!element) return;
+  element.classList.remove("loading");
+  element.textContent = message;
 }
 
 function formatList(list) {
