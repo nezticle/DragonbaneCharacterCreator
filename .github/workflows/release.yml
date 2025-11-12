@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   build-macos:
@@ -26,7 +30,14 @@ jobs:
       - name: Archive macOS binary
         run: tar -czf DragonbaneCharacterCreator-macos.tar.gz .build/release/DragonbaneCharacterCLI
 
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-binary
+          path: DragonbaneCharacterCreator-macos.tar.gz
+
       - name: Automatic Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
