@@ -1,11 +1,11 @@
 #include <stddef.h>
 #include <sqlite3.h>
 
-#if !defined(SQLITE_ENABLE_SNAPSHOT)
+#if defined(__linux__) && !defined(SQLITE_ENABLE_SNAPSHOT)
 
 // Provide weak stub implementations of the snapshot APIs when the
-// system SQLite library is built without SQLITE_ENABLE_SNAPSHOT. GRDB
-// references these symbols on Linux, but many distributions ship
+// Linux system SQLite library is built without SQLITE_ENABLE_SNAPSHOT.
+// GRDB references these symbols on Linux, but many distributions ship
 // SQLite without snapshot support which results in missing symbols at
 // link time. Returning SQLITE_ERROR mirrors SQLite's behavior when the
 // feature is unavailable and lets GRDB gracefully fall back to its
