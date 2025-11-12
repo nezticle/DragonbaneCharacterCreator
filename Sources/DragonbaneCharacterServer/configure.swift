@@ -28,7 +28,7 @@ public func configure(_ app: Application) throws {
 
     // Ensure static resources packaged with the executable are discoverable.
     app.directory.publicDirectory = app.directory.resourcesDirectory + "Public/"
-    app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
+    app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory, defaultFile: "index.html"))
 
     try routes(app)
 }
