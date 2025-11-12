@@ -1,5 +1,6 @@
 #include <stddef.h>
 #include <sqlite3.h>
+#include "sqlite_snapshot_shims.h"
 
 #if defined(__linux__) && !defined(SQLITE_ENABLE_SNAPSHOT)
 
