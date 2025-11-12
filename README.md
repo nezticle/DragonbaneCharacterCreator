@@ -142,7 +142,7 @@ The Vapor server uses PostgreSQL (default database name `dragonbane`). Tables ar
 
 ## Testing GitHub Actions
 
-The repository includes a GitHub Actions workflow (`.github/workflows/release.yml`) that builds the CLI for macOS and creates releases. You can test workflow changes before merging:
+The repository includes a GitHub Actions workflow (`.github/workflows/release.yml`) that builds the CLI for both macOS and Linux, and creates releases. You can test workflow changes before merging:
 
 ### Testing via Pull Requests
 When you open a pull request targeting the `main` branch, the workflow automatically runs to build and test your changes. Build artifacts are available for download in the workflow run details.
