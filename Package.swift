@@ -27,7 +27,8 @@ let package = Package(
         .package(url: "https://github.com/groue/GRDB.swift.git", from: "7.4.1"),
         .package(url: "https://github.com/vapor/vapor.git", from: "4.92.2"),
         .package(url: "https://github.com/vapor/fluent.git", from: "4.9.0"),
-        .package(url: "https://github.com/vapor/fluent-postgres-driver.git", from: "2.10.0")
+        .package(url: "https://github.com/vapor/fluent-postgres-driver.git", from: "2.10.0"),
+        .package(url: "https://github.com/vapor/fluent-sqlite-driver.git", from: "4.5.0")
     ],
     targets: [
         .target(
@@ -79,10 +80,19 @@ let package = Package(
                 "DragonbaneCharacterCore",
                 .product(name: "Vapor", package: "vapor"),
                 .product(name: "Fluent", package: "fluent"),
-                .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver")
+                .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
+                .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver")
             ],
             resources: [
                 .copy("Public")
+            ]
+        ),
+        .testTarget(
+            name: "DragonbaneCharacterServerTests",
+            dependencies: [
+                "DragonbaneCharacterServer",
+                .product(name: "XCTVapor", package: "vapor"),
+                .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver")
             ]
         ),
     ]

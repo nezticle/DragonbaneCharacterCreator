@@ -48,80 +48,82 @@ const IMAGE_DEFAULTS = {
   model: "gpt-image-1"
 };
 
-document.addEventListener("DOMContentLoaded", () => {
-  setupTabs();
-  populateSelect(document.getElementById("randomKin"), kinOptions, true);
-  populateSelect(document.getElementById("randomProfession"), professionOptions, true);
-  populateSelect(document.getElementById("generateKin"), kinOptions);
-  populateSelect(document.getElementById("generateProfession"), professionOptions);
-  populateSelect(document.getElementById("generateAge"), ageOptions);
-  populateSelect(document.getElementById("bulkKin"), kinOptions);
-  populateSelect(document.getElementById("bulkProfession"), professionOptions);
-  populateSelect(document.getElementById("bulkAge"), ageOptions);
+if (typeof document !== "undefined") {
+  document.addEventListener("DOMContentLoaded", () => {
+    setupTabs();
+    populateSelect(document.getElementById("randomKin"), kinOptions, true);
+    populateSelect(document.getElementById("randomProfession"), professionOptions, true);
+    populateSelect(document.getElementById("generateKin"), kinOptions);
+    populateSelect(document.getElementById("generateProfession"), professionOptions);
+    populateSelect(document.getElementById("generateAge"), ageOptions);
+    populateSelect(document.getElementById("bulkKin"), kinOptions);
+    populateSelect(document.getElementById("bulkProfession"), professionOptions);
+    populateSelect(document.getElementById("bulkAge"), ageOptions);
 
-  configureNarrativeModeControls({
-    modeSelectId: "generateNarrativeMode",
-    serverGroupId: "llmServerGroup",
-    modelGroupId: "llmModelGroup",
-    keyGroupId: "llmKeyGroup",
-    serverInputId: "llmServer",
-    modelInputId: "llmModel"
+    configureNarrativeModeControls({
+      modeSelectId: "generateNarrativeMode",
+      serverGroupId: "llmServerGroup",
+      modelGroupId: "llmModelGroup",
+      keyGroupId: "llmKeyGroup",
+      serverInputId: "llmServer",
+      modelInputId: "llmModel"
+    });
+    configureNarrativeModeControls({
+      modeSelectId: "bulkNarrativeMode",
+      serverGroupId: "bulkLlmServerGroup",
+      modelGroupId: "bulkLlmModelGroup",
+      keyGroupId: "bulkLlmKeyGroup",
+      serverInputId: "bulkLlmServer",
+      modelInputId: "bulkLlmModel"
+    });
+
+    setEmptyCharacterSheet(
+      document.getElementById("randomResult"),
+      "Fetch a random character to preview their sheet."
+    );
+    setEmptyCharacterSheet(
+      document.getElementById("generateResult"),
+      "Generate a hero to see their stats."
+    );
+
+    const randomForm = document.getElementById("randomForm");
+    if (randomForm) {
+      randomForm.addEventListener("submit", handleRandomSubmit);
+    }
+    const generateForm = document.getElementById("generateForm");
+    if (generateForm) {
+      generateForm.addEventListener("submit", handleGenerateSubmit);
+    }
+    const editSelect = document.getElementById("editCharacter");
+    if (editSelect) {
+      editSelect.addEventListener("change", handleSelectChange);
+    }
+    const editForm = document.getElementById("editForm");
+    if (editForm) {
+      editForm.addEventListener("submit", handleEditSubmit);
+    }
+
+    const imageCharacter = document.getElementById("imageCharacter");
+    if (imageCharacter) {
+      imageCharacter.addEventListener("change", handleImageSelectChange);
+    }
+    const imageForm = document.getElementById("imageForm");
+    if (imageForm) {
+      imageForm.addEventListener("submit", handleImageSubmit);
+    }
+
+    const bulkForm = document.getElementById("bulkForm");
+    if (bulkForm) {
+      bulkForm.addEventListener("submit", handleBulkSubmit);
+    }
+    const refreshRoster = document.getElementById("refreshRoster");
+    if (refreshRoster) {
+      refreshRoster.addEventListener("click", () => loadCharacterList({ showRosterSpinner: true }));
+    }
+
+    loadCharacterList();
   });
-  configureNarrativeModeControls({
-    modeSelectId: "bulkNarrativeMode",
-    serverGroupId: "bulkLlmServerGroup",
-    modelGroupId: "bulkLlmModelGroup",
-    keyGroupId: "bulkLlmKeyGroup",
-    serverInputId: "bulkLlmServer",
-    modelInputId: "bulkLlmModel"
-  });
-
-  setEmptyCharacterSheet(
-    document.getElementById("randomResult"),
-    "Fetch a random character to preview their sheet."
-  );
-  setEmptyCharacterSheet(
-    document.getElementById("generateResult"),
-    "Generate a hero to see their stats."
-  );
-
-  const randomForm = document.getElementById("randomForm");
-  if (randomForm) {
-    randomForm.addEventListener("submit", handleRandomSubmit);
-  }
-  const generateForm = document.getElementById("generateForm");
-  if (generateForm) {
-    generateForm.addEventListener("submit", handleGenerateSubmit);
-  }
-  const editSelect = document.getElementById("editCharacter");
-  if (editSelect) {
-    editSelect.addEventListener("change", handleSelectChange);
-  }
-  const editForm = document.getElementById("editForm");
-  if (editForm) {
-    editForm.addEventListener("submit", handleEditSubmit);
-  }
-
-  const imageCharacter = document.getElementById("imageCharacter");
-  if (imageCharacter) {
-    imageCharacter.addEventListener("change", handleImageSelectChange);
-  }
-  const imageForm = document.getElementById("imageForm");
-  if (imageForm) {
-    imageForm.addEventListener("submit", handleImageSubmit);
-  }
-
-  const bulkForm = document.getElementById("bulkForm");
-  if (bulkForm) {
-    bulkForm.addEventListener("submit", handleBulkSubmit);
-  }
-  const refreshRoster = document.getElementById("refreshRoster");
-  if (refreshRoster) {
-    refreshRoster.addEventListener("click", () => loadCharacterList({ showRosterSpinner: true }));
-  }
-
-  loadCharacterList();
-});
+}
 
 function setupTabs() {
   const buttons = document.querySelectorAll(".tab-button");
@@ -802,4 +804,19 @@ async function extractError(response) {
     // Ignore parse errors and fall back to status text.
   }
   return response.statusText;
+}
+
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = {
+    setupTabs,
+    populateSelect,
+    configureNarrativeModeControls,
+    setEmptyCharacterSheet,
+    renderCharacter,
+    renderAdminRoster,
+    clampBatchCount,
+    createStatCard,
+    createListCard,
+    createTextCard
+  };
 }

@@ -1,9 +1,12 @@
 import Vapor
 import Fluent
 import FluentPostgresDriver
+import FluentSQLiteDriver
 
 public func configure(_ app: Application) throws {
-    if let url = Environment.get("DATABASE_URL"), var config = PostgresConfiguration(url: url) {
+    if app.environment == .testing {
+        app.databases.use(.sqlite(.memory), as: .sqlite)
+    } else if let url = Environment.get("DATABASE_URL"), var config = PostgresConfiguration(url: url) {
         if let tlsSetting = Environment.get("DATABASE_TLS"), tlsSetting.lowercased() == "disable" {
             config.tlsConfiguration = nil
         }
