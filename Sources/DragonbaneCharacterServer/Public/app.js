@@ -48,9 +48,12 @@ const IMAGE_DEFAULTS = {
   model: "gpt-image-1"
 };
 
+const ADMIN_TOKEN_STORAGE_KEY = "dragonbaneAdminToken";
+
 if (typeof document !== "undefined") {
   document.addEventListener("DOMContentLoaded", () => {
     setupTabs();
+    setupAdminTokenField();
     populateSelect(document.getElementById("randomKin"), kinOptions, true);
     populateSelect(document.getElementById("randomProfession"), professionOptions, true);
     populateSelect(document.getElementById("generateKin"), kinOptions);
@@ -236,6 +239,10 @@ async function handleGenerateSubmit(event) {
   if (background) payload.background = background;
 
   const resultContainer = document.getElementById("generateResult");
+  const token = ensureAdminToken(resultContainer);
+  if (!token) {
+    return;
+  }
   const narrativeMode = getValue("generateNarrativeMode") || "offline";
   const useLLM = narrativeMode !== "offline";
   if (useLLM) {
@@ -258,7 +265,7 @@ async function handleGenerateSubmit(event) {
   try {
     const response = await fetch("/api/characters/generate", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: buildAdminHeaders(token, { "Content-Type": "application/json" }),
       body: JSON.stringify(payload)
     });
     if (!response.ok) {
@@ -276,6 +283,10 @@ async function handleGenerateSubmit(event) {
 async function handleBulkSubmit(event) {
   event.preventDefault();
   const status = document.getElementById("bulkStatus");
+  const token = ensureAdminToken(status);
+  if (!token) {
+    return;
+  }
   const payload = {};
   const kin = getValue("bulkKin");
   const profession = getValue("bulkProfession");
@@ -307,7 +318,7 @@ async function handleBulkSubmit(event) {
   try {
     const response = await fetch("/api/characters/bulk-generate", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: buildAdminHeaders(token, { "Content-Type": "application/json" }),
       body: JSON.stringify(payload)
     });
     if (!response.ok) {
@@ -452,12 +463,16 @@ async function handleEditSubmit(event) {
   };
 
   const status = document.getElementById("editStatus");
+  const token = ensureAdminToken(status);
+  if (!token) {
+    return;
+  }
   if (status) status.textContent = "Saving changes...";
 
   try {
     const response = await fetch(`/api/characters/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: buildAdminHeaders(token, { "Content-Type": "application/json" }),
       body: JSON.stringify(payload)
     });
     if (!response.ok) {
@@ -493,12 +508,17 @@ async function handleImageSubmit(event) {
   if (model) payload.model = model;
   if (apiKey) payload.apiKey = apiKey;
 
+  const token = ensureAdminToken(status);
+  if (!token) {
+    return;
+  }
+
   setBusy(status, "Requesting portrait from the image model...");
 
   try {
     const response = await fetch(`/api/characters/${characterId}/images`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: buildAdminHeaders(token, { "Content-Type": "application/json" }),
       body: JSON.stringify(Object.keys(payload).length ? payload : {})
     });
     if (!response.ok) {
@@ -722,10 +742,15 @@ async function deleteCharacter(id, label) {
   if (!confirmation) return;
 
   const status = document.getElementById("rosterStatus");
+  const token = ensureAdminToken(status);
+  if (!token) {
+    return;
+  }
   setBusy(status, `Deleting #${id}...`);
   try {
     const response = await fetch(`/api/characters/${id}`, {
-      method: "DELETE"
+      method: "DELETE",
+      headers: buildAdminHeaders(token)
     });
     if (!response.ok) {
       const message = await extractError(response);
@@ -783,6 +808,58 @@ function getValue(id) {
 
 function getTrimmedValue(id) {
   return getValue(id).trim();
+}
+
+function setupAdminTokenField() {
+  const input = document.getElementById("adminToken");
+  if (!input) return;
+  const stored = getStoredAdminToken();
+  if (stored) {
+    input.value = stored;
+  }
+  input.addEventListener("input", () => {
+    persistAdminToken(input.value.trim());
+  });
+}
+
+function getStoredAdminToken() {
+  if (typeof localStorage === "undefined") {
+    return "";
+  }
+  return localStorage.getItem(ADMIN_TOKEN_STORAGE_KEY) || "";
+}
+
+function persistAdminToken(value) {
+  if (typeof localStorage === "undefined") {
+    return;
+  }
+  const trimmed = value.trim();
+  if (trimmed) {
+    localStorage.setItem(ADMIN_TOKEN_STORAGE_KEY, trimmed);
+  } else {
+    localStorage.removeItem(ADMIN_TOKEN_STORAGE_KEY);
+  }
+}
+
+function getAdminToken() {
+  const input = document.getElementById("adminToken");
+  if (input && input.value.trim()) {
+    return input.value.trim();
+  }
+  return getStoredAdminToken();
+}
+
+function ensureAdminToken(statusElement) {
+  const token = getAdminToken();
+  if (!token) {
+    setStatus(statusElement, "Enter the admin API token first.");
+    return null;
+  }
+  return token;
+}
+
+function buildAdminHeaders(token, base = {}) {
+  return { ...base, Authorization: `Bearer ${token}` };
 }
 
 function formatTimestamp(value) {

@@ -34,5 +34,11 @@ public func configure(_ app: Application) throws {
     app.directory.publicDirectory = app.directory.resourcesDirectory + "Public/"
     app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory, defaultFile: "index.html"))
 
+    if let token = Environment.get("ADMIN_API_TOKEN")?.trimmedOrNil {
+        app.storage[AdminTokenStorageKey.self] = token
+    } else if app.environment != .testing {
+        app.logger.warning("ADMIN_API_TOKEN is not set. Write-protected routes will be disabled.")
+    }
+
     try routes(app)
 }

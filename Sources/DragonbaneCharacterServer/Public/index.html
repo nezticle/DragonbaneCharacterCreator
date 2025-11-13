@@ -171,6 +171,14 @@
         <section class="tab-panel" id="tab-admin" data-tab="admin" role="tabpanel">
             <h2>Admin Tools</h2>
             <div class="panel-grid">
+                <div class="card">
+                    <div class="field">
+                        <label for="adminToken">Admin API token</label>
+                        <input id="adminToken" type="password" placeholder="Paste the shared token" autocomplete="off">
+                        <small>Required for generating, editing, deleting, or saving portraits. Stored locally in this browser.</small>
+                    </div>
+                </div>
+
                 <form id="bulkForm" class="card">
                     <div class="field">
                         <label for="bulkCount">How many characters?</label>

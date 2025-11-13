@@ -3,6 +3,8 @@ import DragonbaneCharacterCore
 @testable import DragonbaneCharacterServer
 
 final class CharacterAdminTests: XCTestCase {
+    private let testToken = "test-token"
+
     func testBulkGenerateCreatesRequestedCharacters() throws {
         let app = try makeTestApp()
         defer { app.shutdown() }
@@ -22,6 +24,7 @@ final class CharacterAdminTests: XCTestCase {
         )
 
         try app.test(.POST, "/api/characters/bulk-generate", beforeRequest: { req in
+            req.headers.bearerAuthorization = .init(token: testToken)
             try req.content.encode(payload)
         }) { res in
             XCTAssertEqual(res.status, .ok)
@@ -42,7 +45,9 @@ final class CharacterAdminTests: XCTestCase {
         try model.create(on: app.db).wait()
         let id = try XCTUnwrap(model.id)
 
-        try app.test(.DELETE, "/api/characters/\(id)") { res in
+        try app.test(.DELETE, "/api/characters/\(id)", beforeRequest: { req in
+            req.headers.bearerAuthorization = .init(token: testToken)
+        }) { res in
             XCTAssertEqual(res.status, .noContent)
         }
 
@@ -54,6 +59,7 @@ final class CharacterAdminTests: XCTestCase {
 
     private func makeTestApp() throws -> Application {
         let app = Application(.testing)
+        app.storage[AdminTokenStorageKey.self] = testToken
         try configure(app)
         try app.autoMigrate().wait()
         return app
