@@ -22,6 +22,35 @@ struct CharacterController {
         }
     }
 
+    struct BulkGenerateRequest: Content {
+        let count: Int
+        let race: Race?
+        let profession: Profession?
+        let age: Age?
+        let name: String?
+        let background: String?
+        let appearance: String?
+        let narrativeMode: GenerateRequest.NarrativeMode?
+        let llmServer: String?
+        let llmModel: String?
+        let llmApiKey: String?
+
+        func asGenerateRequest() -> GenerateRequest {
+            GenerateRequest(
+                race: race,
+                profession: profession,
+                age: age,
+                name: name,
+                background: background,
+                appearance: appearance,
+                narrativeMode: narrativeMode,
+                llmServer: llmServer,
+                llmModel: llmModel,
+                llmApiKey: llmApiKey
+            )
+        }
+    }
+
     func index(_ req: Request) async throws -> [CharacterResponse] {
         let limit = min(max(req.query[Int.self, at: "limit"] ?? 50, 1), 200)
         var query = CharacterModel.query(on: req.db)
@@ -65,6 +94,28 @@ struct CharacterController {
 
     func generate(_ req: Request) async throws -> CharacterResponse {
         let payload = try? req.content.decode(GenerateRequest.self)
+        let model = try await createCharacter(from: payload, on: req)
+        return try model.toResponse()
+    }
+
+    func bulkGenerate(_ req: Request) async throws -> [CharacterResponse] {
+        let payload = try req.content.decode(BulkGenerateRequest.self)
+        let count = min(max(payload.count, 1), 20)
+        var responses: [CharacterResponse] = []
+        for _ in 0..<count {
+            let model = try await createCharacter(from: payload.asGenerateRequest(), on: req)
+            responses.append(try model.toResponse())
+        }
+        return responses
+    }
+
+    func delete(_ req: Request) async throws -> HTTPStatus {
+        let model = try await requireModel(req)
+        try await model.delete(on: req.db)
+        return .noContent
+    }
+
+    private func createCharacter(from payload: GenerateRequest?, on req: Request) async throws -> CharacterModel {
         let filters = GenerationFilters(
             race: payload?.race,
             profession: payload?.profession,
@@ -87,7 +138,7 @@ struct CharacterController {
         if let appearance = payload?.appearance { model.appearance = appearance }
 
         try await model.create(on: req.db)
-        return try model.toResponse()
+        return model
     }
 
     func update(_ req: Request) async throws -> CharacterResponse {

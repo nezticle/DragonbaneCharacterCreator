@@ -3,25 +3,74 @@
     font-family: 'Helvetica Neue', Arial, sans-serif;
     background-color: #0f172a;
     color: #f8fafc;
+    --surface: rgba(15, 23, 42, 0.85);
+    --border: rgba(148, 163, 184, 0.3);
+    --border-strong: rgba(148, 163, 184, 0.5);
+    --accent: #38bdf8;
+    --accent-strong: #6366f1;
 }
 
 body {
     margin: 0;
     min-height: 100vh;
-    background: linear-gradient(180deg, rgba(15,23,42,1) 0%, rgba(30,41,59,1) 100%);
+    background: radial-gradient(circle at top, rgba(56, 189, 248, 0.15), transparent 50%), linear-gradient(180deg, rgba(15,23,42,1) 0%, rgba(30,41,59,1) 100%);
 }
 
 header {
     text-align: center;
-    padding: 2rem 1rem 1rem;
+    padding: 2.5rem 1rem 1rem;
 }
 
 main {
-    max-width: 960px;
+    max-width: 1100px;
     margin: 0 auto 4rem;
-    padding: 0 1rem;
-    display: grid;
+    padding: 0 1rem 3rem;
+    display: flex;
+    flex-direction: column;
     gap: 2rem;
+}
+
+.tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+.tab-button {
+    padding: 0.65rem 1.25rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background: rgba(15, 23, 42, 0.6);
+    color: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.tab-button.active {
+    border-color: var(--accent);
+    background: linear-gradient(135deg, rgba(56,189,248,0.25), rgba(99,102,241,0.35));
+}
+
+.tab-button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+}
+
+.tab-panel {
+    display: none;
+}
+
+.tab-panel.active {
+    display: block;
+}
+
+.panel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    align-items: start;
 }
 
 section h2 {
@@ -29,10 +78,10 @@ section h2 {
 }
 
 .card {
-    background: rgba(15, 23, 42, 0.8);
-    border: 1px solid rgba(148, 163, 184, 0.3);
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 1rem;
+    padding: 1.25rem;
     box-shadow: 0 12px 32px rgba(15, 23, 42, 0.5);
 }
 
@@ -53,10 +102,11 @@ textarea,
 button {
     padding: 0.6rem;
     border-radius: 8px;
-    border: 1px solid rgba(148, 163, 184, 0.5);
+    border: 1px solid var(--border-strong);
     background: rgba(30, 41, 59, 0.8);
     color: inherit;
     font-size: 1rem;
+    font-family: inherit;
 }
 
 select[multiple] {
@@ -66,7 +116,7 @@ select[multiple] {
 button {
     cursor: pointer;
     font-weight: 600;
-    background: linear-gradient(135deg, #38bdf8, #6366f1);
+    background: linear-gradient(135deg, var(--accent), var(--accent-strong));
     border: none;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
@@ -74,11 +124,6 @@ button {
 button:hover {
     transform: translateY(-1px);
     box-shadow: 0 8px 20px rgba(56, 189, 248, 0.35);
-}
-
-.result {
-    margin-top: 1rem;
-    white-space: pre-wrap;
 }
 
 .result.loading {
@@ -105,21 +150,117 @@ button:hover {
 }
 
 small {
+    color: rgba(148, 163, 184, 0.85);
+}
+
+.result {
+    margin-top: 1rem;
+    white-space: pre-wrap;
+}
+
+.character-sheet {
+    min-height: 240px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    border: 1px solid rgba(248, 250, 252, 0.08);
+    background: rgba(10, 15, 25, 0.6);
+}
+
+.character-sheet.empty {
+    align-items: center;
+    justify-content: center;
+    font-style: italic;
     color: rgba(148, 163, 184, 0.9);
 }
 
-.character-block {
-    display: grid;
-    gap: 0.5rem;
+.sheet-header {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(248, 250, 252, 0.08);
 }
 
-.character-block h3 {
+.sheet-name {
+    font-size: 1.5rem;
     margin: 0;
 }
 
-.character-block ul {
-    list-style: disc;
-    padding-left: 1.25rem;
+.sheet-meta {
+    margin: 0;
+    color: rgba(148, 163, 184, 0.9);
+}
+
+.sheet-id {
+    font-weight: 600;
+    color: rgba(148, 163, 184, 0.9);
+}
+
+.sheet-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    gap: 0.5rem;
+}
+
+.stat-card {
+    border: 1px solid rgba(248, 250, 252, 0.08);
+    border-radius: 8px;
+    padding: 0.5rem;
+    text-align: center;
+    background: rgba(30, 41, 59, 0.45);
+}
+
+.stat-card span {
+    display: block;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    color: rgba(148, 163, 184, 0.9);
+}
+
+.stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.list-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.list-card {
+    border: 1px solid rgba(248, 250, 252, 0.08);
+    border-radius: 10px;
+    padding: 0.75rem;
+    background: rgba(15, 23, 42, 0.5);
+}
+
+.list-card h3 {
+    margin: 0 0 0.5rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: rgba(248, 250, 252, 0.85);
+}
+
+.list-card ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    color: rgba(248, 250, 252, 0.9);
+}
+
+.list-card p {
     margin: 0;
 }
 
@@ -150,9 +291,55 @@ small {
     text-align: center;
 }
 
+.roster-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.roster-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.roster-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.roster-table th,
+.roster-table td {
+    border-bottom: 1px solid rgba(248, 250, 252, 0.08);
+    padding: 0.5rem 0.25rem;
+}
+
+.roster-table th {
+    text-align: left;
+    letter-spacing: 0.5px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    color: rgba(148, 163, 184, 0.9);
+}
+
+.roster-table button {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.85rem;
+}
+
+.action-danger {
+    background: linear-gradient(135deg, #fb7185, #f97316);
+}
+
 @media (max-width: 720px) {
-    main {
-        grid-template-columns: 1fr;
+    .tabs {
+        justify-content: flex-start;
     }
 }
 

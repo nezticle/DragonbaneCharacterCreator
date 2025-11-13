@@ -49,22 +49,59 @@ const IMAGE_DEFAULTS = {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
+  setupTabs();
   populateSelect(document.getElementById("randomKin"), kinOptions, true);
   populateSelect(document.getElementById("randomProfession"), professionOptions, true);
   populateSelect(document.getElementById("generateKin"), kinOptions);
   populateSelect(document.getElementById("generateProfession"), professionOptions);
   populateSelect(document.getElementById("generateAge"), ageOptions);
-  loadCharacterList();
-  const narrativeSelect = document.getElementById("generateNarrativeMode");
-  if (narrativeSelect) {
-    narrativeSelect.addEventListener("change", handleNarrativeModeChange);
-    handleNarrativeModeChange();
+  populateSelect(document.getElementById("bulkKin"), kinOptions);
+  populateSelect(document.getElementById("bulkProfession"), professionOptions);
+  populateSelect(document.getElementById("bulkAge"), ageOptions);
+
+  configureNarrativeModeControls({
+    modeSelectId: "generateNarrativeMode",
+    serverGroupId: "llmServerGroup",
+    modelGroupId: "llmModelGroup",
+    keyGroupId: "llmKeyGroup",
+    serverInputId: "llmServer",
+    modelInputId: "llmModel"
+  });
+  configureNarrativeModeControls({
+    modeSelectId: "bulkNarrativeMode",
+    serverGroupId: "bulkLlmServerGroup",
+    modelGroupId: "bulkLlmModelGroup",
+    keyGroupId: "bulkLlmKeyGroup",
+    serverInputId: "bulkLlmServer",
+    modelInputId: "bulkLlmModel"
+  });
+
+  setEmptyCharacterSheet(
+    document.getElementById("randomResult"),
+    "Fetch a random character to preview their sheet."
+  );
+  setEmptyCharacterSheet(
+    document.getElementById("generateResult"),
+    "Generate a hero to see their stats."
+  );
+
+  const randomForm = document.getElementById("randomForm");
+  if (randomForm) {
+    randomForm.addEventListener("submit", handleRandomSubmit);
+  }
+  const generateForm = document.getElementById("generateForm");
+  if (generateForm) {
+    generateForm.addEventListener("submit", handleGenerateSubmit);
+  }
+  const editSelect = document.getElementById("editCharacter");
+  if (editSelect) {
+    editSelect.addEventListener("change", handleSelectChange);
+  }
+  const editForm = document.getElementById("editForm");
+  if (editForm) {
+    editForm.addEventListener("submit", handleEditSubmit);
   }
 
-  document.getElementById("randomForm").addEventListener("submit", handleRandomSubmit);
-  document.getElementById("generateForm").addEventListener("submit", handleGenerateSubmit);
-  document.getElementById("editCharacter").addEventListener("change", handleSelectChange);
-  document.getElementById("editForm").addEventListener("submit", handleEditSubmit);
   const imageCharacter = document.getElementById("imageCharacter");
   if (imageCharacter) {
     imageCharacter.addEventListener("change", handleImageSelectChange);
@@ -73,10 +110,51 @@ document.addEventListener("DOMContentLoaded", () => {
   if (imageForm) {
     imageForm.addEventListener("submit", handleImageSubmit);
   }
+
+  const bulkForm = document.getElementById("bulkForm");
+  if (bulkForm) {
+    bulkForm.addEventListener("submit", handleBulkSubmit);
+  }
+  const refreshRoster = document.getElementById("refreshRoster");
+  if (refreshRoster) {
+    refreshRoster.addEventListener("click", () => loadCharacterList({ showRosterSpinner: true }));
+  }
+
+  loadCharacterList();
 });
 
+function setupTabs() {
+  const buttons = document.querySelectorAll(".tab-button");
+  const panels = document.querySelectorAll(".tab-panel");
+  if (!buttons.length || !panels.length) return;
+  const activeButton = document.querySelector(".tab-button.active");
+  const defaultTab = activeButton?.dataset.tab || buttons[0].dataset.tab;
+
+  const activate = (tab) => {
+    buttons.forEach((button) => {
+      const isActive = button.dataset.tab === tab;
+      button.classList.toggle("active", isActive);
+      button.setAttribute("aria-selected", isActive ? "true" : "false");
+      button.tabIndex = isActive ? 0 : -1;
+    });
+    panels.forEach((panel) => {
+      const isActive = panel.dataset.tab === tab;
+      panel.classList.toggle("active", isActive);
+      panel.hidden = !isActive;
+    });
+  };
+
+  buttons.forEach((button) => {
+    button.addEventListener("click", () => {
+      activate(button.dataset.tab);
+    });
+  });
+
+  activate(defaultTab);
+}
+
 function populateSelect(select, options, isMultiple = false) {
-  if (!select) return;
+  if (!select || !Array.isArray(options)) return;
   options.forEach((value) => {
     const option = document.createElement("option");
     option.value = value;
@@ -92,23 +170,26 @@ function selectedValues(select) {
   return Array.from(select.selectedOptions).map((opt) => opt.value);
 }
 
-function handleNarrativeModeChange() {
-  const mode = document.getElementById("generateNarrativeMode").value;
-  const showLLMFields = mode !== "offline";
-  toggleField("llmServerGroup", showLLMFields);
-  toggleField("llmModelGroup", showLLMFields);
-  toggleField("llmKeyGroup", mode === "openai" || mode === "custom");
+function configureNarrativeModeControls(config) {
+  const select = document.getElementById(config.modeSelectId);
+  if (!select) return;
+  const handle = () => {
+    const mode = select.value;
+    const showLLMFields = mode !== "offline";
+    toggleField(config.serverGroupId, showLLMFields);
+    toggleField(config.modelGroupId, showLLMFields);
+    toggleField(config.keyGroupId, mode === "openai" || mode === "custom");
 
-  if (mode !== "custom" && mode !== "offline" && LLM_DEFAULTS[mode]) {
-    document.getElementById("llmServer").value = LLM_DEFAULTS[mode].server;
-    document.getElementById("llmModel").value = LLM_DEFAULTS[mode].model;
-  }
-}
-
-function toggleField(id, show) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.classList.toggle("hidden", !show);
+    if (mode !== "custom" && mode !== "offline" && LLM_DEFAULTS[mode]) {
+      const defaults = LLM_DEFAULTS[mode];
+      const serverInput = document.getElementById(config.serverInputId);
+      const modelInput = document.getElementById(config.modelInputId);
+      if (serverInput) serverInput.value = defaults.server;
+      if (modelInput) modelInput.value = defaults.model;
+    }
+  };
+  select.addEventListener("change", handle);
+  handle();
 }
 
 async function handleRandomSubmit(event) {
@@ -120,30 +201,30 @@ async function handleRandomSubmit(event) {
   if (professions.length) params.set("profession", professions.join(","));
 
   const resultContainer = document.getElementById("randomResult");
-  resultContainer.textContent = "Fetching character...";
+  setBusy(resultContainer, "Fetching character...");
 
   try {
     const response = await fetch(`/api/characters/random${params.toString() ? `?${params.toString()}` : ""}`);
     if (!response.ok) {
       const message = await extractError(response);
-      throw new Error(message || "Failed to fetch a character");
+      throw new Error(message || "Failed to fetch a character.");
     }
     const character = await response.json();
     renderCharacter(resultContainer, character);
   } catch (error) {
-    resultContainer.textContent = error.message;
+    setStatus(resultContainer, error.message);
   }
 }
 
 async function handleGenerateSubmit(event) {
   event.preventDefault();
   const payload = {};
-  const kin = document.getElementById("generateKin").value;
-  const profession = document.getElementById("generateProfession").value;
-  const age = document.getElementById("generateAge").value;
-  const name = document.getElementById("generateName").value.trim();
-  const appearance = document.getElementById("generateAppearance").value.trim();
-  const background = document.getElementById("generateBackground").value.trim();
+  const kin = getValue("generateKin");
+  const profession = getValue("generateProfession");
+  const age = getValue("generateAge");
+  const name = getTrimmedValue("generateName");
+  const appearance = getTrimmedValue("generateAppearance");
+  const background = getTrimmedValue("generateBackground");
 
   if (kin) payload.race = kin;
   if (profession) payload.profession = profession;
@@ -153,13 +234,13 @@ async function handleGenerateSubmit(event) {
   if (background) payload.background = background;
 
   const resultContainer = document.getElementById("generateResult");
-  const narrativeMode = document.getElementById("generateNarrativeMode").value;
+  const narrativeMode = getValue("generateNarrativeMode") || "offline";
   const useLLM = narrativeMode !== "offline";
   if (useLLM) {
     payload.narrativeMode = "llm";
-    const server = document.getElementById("llmServer").value.trim();
-    const model = document.getElementById("llmModel").value.trim();
-    const apiKey = document.getElementById("llmApiKey").value.trim();
+    const server = getTrimmedValue("llmServer");
+    const model = getTrimmedValue("llmModel");
+    const apiKey = getTrimmedValue("llmApiKey");
     if (server) payload.llmServer = server;
     if (model) payload.llmModel = model;
     if (narrativeMode === "openai" && !apiKey) {
@@ -180,7 +261,7 @@ async function handleGenerateSubmit(event) {
     });
     if (!response.ok) {
       const message = await extractError(response);
-      throw new Error(message || "Generation failed");
+      throw new Error(message || "Generation failed.");
     }
     const character = await response.json();
     renderCharacter(resultContainer, character);
@@ -190,15 +271,73 @@ async function handleGenerateSubmit(event) {
   }
 }
 
-async function loadCharacterList() {
+async function handleBulkSubmit(event) {
+  event.preventDefault();
+  const status = document.getElementById("bulkStatus");
+  const payload = {};
+  const kin = getValue("bulkKin");
+  const profession = getValue("bulkProfession");
+  const age = getValue("bulkAge");
+  const count = clampBatchCount(Number(getValue("bulkCount")) || 0);
+  if (kin) payload.race = kin;
+  if (profession) payload.profession = profession;
+  if (age) payload.age = age;
+  payload.count = count;
+
+  const mode = getValue("bulkNarrativeMode") || "offline";
+  const useLLM = mode !== "offline";
+  if (useLLM) {
+    payload.narrativeMode = "llm";
+    const server = getTrimmedValue("bulkLlmServer");
+    const model = getTrimmedValue("bulkLlmModel");
+    const apiKey = getTrimmedValue("bulkLlmApiKey");
+    if (server) payload.llmServer = server;
+    if (model) payload.llmModel = model;
+    if (mode === "openai" && !apiKey) {
+      setStatus(status, "OpenAI requests require an API key.");
+      return;
+    }
+    if (apiKey) payload.llmApiKey = apiKey;
+  }
+
+  setBusy(status, `Generating ${count} character${count === 1 ? "" : "s"}...`);
+
+  try {
+    const response = await fetch("/api/characters/bulk-generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (!response.ok) {
+      const message = await extractError(response);
+      throw new Error(message || "Bulk generation failed.");
+    }
+    const characters = await response.json();
+    const ids = characters.map((character) => (character.id ? `#${character.id}` : null)).filter(Boolean).join(", ");
+    setStatus(
+      status,
+      `Created ${characters.length} character${characters.length === 1 ? "" : "s"}${ids ? ` (${ids})` : ""}.`
+    );
+    await loadCharacterList();
+  } catch (error) {
+    setStatus(status, error.message);
+  }
+}
+
+async function loadCharacterList(options = {}) {
   const editSelect = document.getElementById("editCharacter");
   const imageSelect = document.getElementById("imageCharacter");
-  if (!editSelect && !imageSelect) return;
+  const rosterStatusEl = document.getElementById("rosterStatus");
+  const showRosterSpinner = Boolean(options.showRosterSpinner && rosterStatusEl);
+  if (!editSelect && !imageSelect && !rosterStatusEl) return;
+  if (showRosterSpinner) {
+    setBusy(rosterStatusEl, "Refreshing roster...");
+  }
 
   try {
     const response = await fetch("/api/characters?limit=100");
     if (!response.ok) {
-      throw new Error("Unable to load characters");
+      throw new Error("Unable to load characters.");
     }
     const characters = await response.json();
     if (editSelect) {
@@ -244,6 +383,7 @@ async function loadCharacterList() {
         }
       }
     }
+    renderAdminRoster(characters);
   } catch (error) {
     const editStatus = document.getElementById("editStatus");
     if (editStatus) {
@@ -253,14 +393,19 @@ async function loadCharacterList() {
     if (imageStatus) {
       imageStatus.textContent = error.message;
     }
+    if (rosterStatusEl) {
+      setStatus(rosterStatusEl, error.message);
+    }
   }
 }
 
 async function handleSelectChange(event) {
   const id = event.target.value;
+  const form = document.getElementById("editForm");
+  const status = document.getElementById("editStatus");
   if (!id) {
-    document.getElementById("editForm").classList.add("hidden");
-    document.getElementById("editStatus").textContent = "";
+    if (form) form.classList.add("hidden");
+    if (status) status.textContent = "";
     return;
   }
   await populateEditForm(id);
@@ -270,39 +415,42 @@ async function populateEditForm(id) {
   try {
     const response = await fetch(`/api/characters/${id}`);
     if (!response.ok) {
-      throw new Error("Unable to load character details");
+      throw new Error("Unable to load character details.");
     }
     const character = await response.json();
-    document.getElementById("editForm").classList.remove("hidden");
+    document.getElementById("editForm")?.classList.remove("hidden");
     document.getElementById("editName").value = character.name;
     document.getElementById("editAppearance").value = character.appearance;
     document.getElementById("editBackground").value = character.background;
     document.getElementById("editWeakness").value = character.weakness;
     document.getElementById("editMemento").value = character.memento;
     document.getElementById("editGear").value = character.gear.join(", ");
-    document.getElementById("editStatus").textContent = "";
+    const status = document.getElementById("editStatus");
+    if (status) status.textContent = "";
   } catch (error) {
-    document.getElementById("editStatus").textContent = error.message;
+    const status = document.getElementById("editStatus");
+    if (status) status.textContent = error.message;
   }
 }
 
 async function handleEditSubmit(event) {
   event.preventDefault();
   const select = document.getElementById("editCharacter");
+  if (!select) return;
   const id = select.value;
   if (!id) return;
 
   const payload = {
-    name: document.getElementById("editName").value.trim(),
-    appearance: document.getElementById("editAppearance").value.trim(),
-    background: document.getElementById("editBackground").value.trim(),
-    weakness: document.getElementById("editWeakness").value.trim(),
-    memento: document.getElementById("editMemento").value.trim(),
-    gear: parseList(document.getElementById("editGear").value)
+    name: getTrimmedValue("editName"),
+    appearance: getTrimmedValue("editAppearance"),
+    background: getTrimmedValue("editBackground"),
+    weakness: getTrimmedValue("editWeakness"),
+    memento: getTrimmedValue("editMemento"),
+    gear: parseList(getValue("editGear"))
   };
 
   const status = document.getElementById("editStatus");
-  status.textContent = "Saving changes...";
+  if (status) status.textContent = "Saving changes...";
 
   try {
     const response = await fetch(`/api/characters/${id}`, {
@@ -312,13 +460,13 @@ async function handleEditSubmit(event) {
     });
     if (!response.ok) {
       const message = await extractError(response);
-      throw new Error(message || "Failed to save changes");
+      throw new Error(message || "Failed to save changes.");
     }
     const updated = await response.json();
-    status.textContent = "Character updated.";
+    if (status) status.textContent = "Character updated.";
     updateOptionLabel(select, updated);
   } catch (error) {
-    status.textContent = error.message;
+    if (status) status.textContent = error.message;
   }
 }
 
@@ -328,7 +476,7 @@ async function handleImageSelectChange(event) {
 
 async function handleImageSubmit(event) {
   event.preventDefault();
-  const characterId = document.getElementById("imageCharacter").value;
+  const characterId = getValue("imageCharacter");
   const status = document.getElementById("imageStatus");
   if (!characterId) {
     setStatus(status, "Select a character first.");
@@ -336,9 +484,9 @@ async function handleImageSubmit(event) {
   }
 
   const payload = {};
-  const server = document.getElementById("imageServer").value.trim();
-  const model = document.getElementById("imageModel").value.trim();
-  const apiKey = document.getElementById("imageApiKey").value.trim();
+  const server = getTrimmedValue("imageServer") || IMAGE_DEFAULTS.server;
+  const model = getTrimmedValue("imageModel") || IMAGE_DEFAULTS.model;
+  const apiKey = getTrimmedValue("imageApiKey");
   if (server) payload.server = server;
   if (model) payload.model = model;
   if (apiKey) payload.apiKey = apiKey;
@@ -349,7 +497,7 @@ async function handleImageSubmit(event) {
     const response = await fetch(`/api/characters/${characterId}/images`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(Object.keys(payload).length ? payload : { })
+      body: JSON.stringify(Object.keys(payload).length ? payload : {})
     });
     if (!response.ok) {
       const message = await extractError(response);
@@ -409,9 +557,182 @@ async function loadImageGallery(characterId) {
 }
 
 function updateOptionLabel(select, character) {
+  if (!select || !character?.id) return;
   const option = Array.from(select.options).find((opt) => opt.value === String(character.id));
   if (option) {
     option.textContent = `#${character.id} — ${character.name || character.race}`;
+  }
+}
+
+function renderCharacter(container, character) {
+  if (!container) return;
+  container.classList.remove("loading");
+  container.classList.add("character-sheet");
+  container.classList.remove("empty");
+  container.innerHTML = "";
+  if (!character) {
+    setEmptyCharacterSheet(container, "No character to display yet.");
+    return;
+  }
+
+  const header = document.createElement("div");
+  header.className = "sheet-header";
+  const headerText = document.createElement("div");
+  const name = document.createElement("p");
+  name.className = "sheet-name";
+  name.textContent = character.name;
+  const meta = document.createElement("p");
+  meta.className = "sheet-meta";
+  meta.textContent = `${character.race} • ${character.profession} • ${character.age}`;
+  headerText.appendChild(name);
+  headerText.appendChild(meta);
+  header.appendChild(headerText);
+  if (character.id) {
+    const identifier = document.createElement("div");
+    identifier.className = "sheet-id";
+    identifier.textContent = `#${character.id}`;
+    header.appendChild(identifier);
+  }
+  container.appendChild(header);
+
+  const statGrid = document.createElement("div");
+  statGrid.className = "stat-grid";
+  [
+    ["STR", character.strength],
+    ["CON", character.constitution],
+    ["AGL", character.agility],
+    ["INT", character.intelligence],
+    ["WIL", character.willpower],
+    ["CHA", character.charisma]
+  ].forEach(([label, value]) => {
+    statGrid.appendChild(createStatCard(label, value));
+  });
+  container.appendChild(statGrid);
+
+  const listGrid = document.createElement("div");
+  listGrid.className = "list-grid";
+  listGrid.appendChild(createListCard("Heroic Abilities", character.heroicAbilities));
+  listGrid.appendChild(createListCard("Trained Skills", character.trainedSkills));
+  listGrid.appendChild(createListCard("Magic", character.magic));
+  listGrid.appendChild(createListCard("Gear", character.gear));
+  container.appendChild(listGrid);
+
+  const storyGrid = document.createElement("div");
+  storyGrid.className = "list-grid";
+  storyGrid.appendChild(createTextCard("Weakness", character.weakness));
+  storyGrid.appendChild(createTextCard("Memento", character.memento));
+  storyGrid.appendChild(createTextCard("Appearance", character.appearance));
+  storyGrid.appendChild(createTextCard("Background", character.background));
+  container.appendChild(storyGrid);
+}
+
+function createStatCard(label, value) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "stat-card";
+  const statLabel = document.createElement("span");
+  statLabel.className = "stat-label";
+  statLabel.textContent = label;
+  const statValue = document.createElement("span");
+  statValue.className = "stat-value";
+  statValue.textContent = value ?? "—";
+  wrapper.appendChild(statLabel);
+  wrapper.appendChild(statValue);
+  return wrapper;
+}
+
+function createListCard(title, items) {
+  const card = document.createElement("div");
+  card.className = "list-card";
+  const heading = document.createElement("h3");
+  heading.textContent = title;
+  card.appendChild(heading);
+  if (!Array.isArray(items) || items.length === 0) {
+    const empty = document.createElement("p");
+    empty.textContent = "None";
+    card.appendChild(empty);
+    return card;
+  }
+  const list = document.createElement("ul");
+  items.forEach((item) => {
+    const li = document.createElement("li");
+    li.textContent = item;
+    list.appendChild(li);
+  });
+  card.appendChild(list);
+  return card;
+}
+
+function createTextCard(title, text) {
+  const card = document.createElement("div");
+  card.className = "list-card";
+  const heading = document.createElement("h3");
+  heading.textContent = title;
+  card.appendChild(heading);
+  const paragraph = document.createElement("p");
+  paragraph.textContent = text && text.trim().length ? text : "—";
+  card.appendChild(paragraph);
+  return card;
+}
+
+function renderAdminRoster(characters) {
+  const body = document.getElementById("rosterTableBody");
+  const status = document.getElementById("rosterStatus");
+  if (!body || !status) return;
+  status.classList.remove("loading");
+  body.innerHTML = "";
+  if (!Array.isArray(characters) || characters.length === 0) {
+    status.textContent = "No characters saved yet.";
+    return;
+  }
+  status.textContent = "";
+  characters.forEach((character) => {
+    if (!character.id) return;
+    const row = document.createElement("tr");
+    const idCell = document.createElement("td");
+    idCell.textContent = `#${character.id}`;
+    const nameCell = document.createElement("td");
+    nameCell.textContent = character.name || "Unnamed";
+    const kinCell = document.createElement("td");
+    kinCell.textContent = character.race;
+    const professionCell = document.createElement("td");
+    professionCell.textContent = character.profession;
+    const actionCell = document.createElement("td");
+    const deleteButton = document.createElement("button");
+    deleteButton.type = "button";
+    deleteButton.className = "action-danger";
+    deleteButton.textContent = "Delete";
+    deleteButton.addEventListener("click", () => {
+      deleteCharacter(character.id, character.name || character.race);
+    });
+    actionCell.appendChild(deleteButton);
+    row.appendChild(idCell);
+    row.appendChild(nameCell);
+    row.appendChild(kinCell);
+    row.appendChild(professionCell);
+    row.appendChild(actionCell);
+    body.appendChild(row);
+  });
+}
+
+async function deleteCharacter(id, label) {
+  if (!id) return;
+  const confirmation = window.confirm(`Delete ${label ? `"${label}" ` : ""}character #${id}?`);
+  if (!confirmation) return;
+
+  const status = document.getElementById("rosterStatus");
+  setBusy(status, `Deleting #${id}...`);
+  try {
+    const response = await fetch(`/api/characters/${id}`, {
+      method: "DELETE"
+    });
+    if (!response.ok) {
+      const message = await extractError(response);
+      throw new Error(message || "Failed to delete character.");
+    }
+    await loadCharacterList();
+    setStatus(status, `Deleted character #${id}.`);
+  } catch (error) {
+    setStatus(status, error.message);
   }
 }
 
@@ -422,25 +743,44 @@ function parseList(value) {
     .filter((item) => item.length > 0);
 }
 
-function renderCharacter(container, character) {
-  container.classList.remove("loading");
-  const lines = [];
-  lines.push(`Name: ${character.name}`);
-  lines.push(`Kin: ${character.race}`);
-  lines.push(`Profession: ${character.profession}`);
-  lines.push(`Age: ${character.age}`);
-  lines.push("Attributes:");
-  lines.push(`  STR ${character.strength}  CON ${character.constitution}  AGL ${character.agility}`);
-  lines.push(`  INT ${character.intelligence}  WIL ${character.willpower}  CHA ${character.charisma}`);
-  lines.push(`Heroic Abilities: ${formatList(character.heroicAbilities)}`);
-  lines.push(`Trained Skills: ${formatList(character.trainedSkills)}`);
-  lines.push(`Magic: ${formatList(character.magic)}`);
-  lines.push(`Gear: ${formatList(character.gear)}`);
-  lines.push(`Weakness: ${character.weakness}`);
-  lines.push(`Memento: ${character.memento}`);
-  lines.push(`Appearance: ${character.appearance}`);
-  lines.push(`Background: ${character.background}`);
-  container.textContent = lines.join("\n");
+function setBusy(element, message) {
+  if (!element) return;
+  element.classList.add("loading");
+  element.classList.remove("empty");
+  element.innerHTML = `<div class="spinner" aria-hidden="true"></div><span>${message}</span>`;
+}
+
+function setStatus(element, message) {
+  if (!element) return;
+  element.classList.remove("loading");
+  element.textContent = message || "";
+}
+
+function setEmptyCharacterSheet(element, message) {
+  if (!element) return;
+  element.classList.remove("loading");
+  element.classList.add("character-sheet", "empty");
+  element.textContent = message;
+}
+
+function toggleField(id, show) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.toggle("hidden", !show);
+}
+
+function clampBatchCount(value) {
+  if (!Number.isFinite(value) || value <= 0) return 1;
+  return Math.min(Math.max(Math.floor(value), 1), 20);
+}
+
+function getValue(id) {
+  const element = document.getElementById(id);
+  return element ? element.value : "";
+}
+
+function getTrimmedValue(id) {
+  return getValue(id).trim();
 }
 
 function formatTimestamp(value) {
@@ -452,32 +792,13 @@ function formatTimestamp(value) {
   return date.toLocaleString();
 }
 
-function setBusy(element, message) {
-  if (!element) return;
-  element.classList.add("loading");
-  element.innerHTML = `<div class="spinner" aria-hidden="true"></div><span>${message}</span>`;
-}
-
-function setStatus(element, message) {
-  if (!element) return;
-  element.classList.remove("loading");
-  element.textContent = message;
-}
-
-function formatList(list) {
-  if (!Array.isArray(list) || list.length === 0) {
-    return "None";
-  }
-  return list.join(", ");
-}
-
 async function extractError(response) {
   try {
     const data = await response.json();
     if (data?.reason) return data.reason;
     if (data?.error) return data.error;
     if (typeof data === "string") return data;
-  } catch (error) {
+  } catch {
     // Ignore parse errors and fall back to status text.
   }
   return response.statusText;

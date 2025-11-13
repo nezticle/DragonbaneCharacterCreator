@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dragonbane Character Service</title>
-    <link rel="stylesheet" href="/styles.css?v=20250210">
+    <link rel="stylesheet" href="/styles.css?v=20250305">
 </head>
 <body>
     <header>
@@ -12,84 +12,96 @@
         <p>Generate, retrieve, and edit characters from the Dragonbane roster.</p>
     </header>
     <main>
-        <section>
+        <div class="tabs" role="tablist" aria-label="Character workflows">
+            <button class="tab-button active" data-tab="random" role="tab" aria-controls="tab-random">Random Draw</button>
+            <button class="tab-button" data-tab="generate" role="tab" aria-controls="tab-generate">Generator</button>
+            <button class="tab-button" data-tab="edit" role="tab" aria-controls="tab-edit">Editor</button>
+            <button class="tab-button" data-tab="portrait" role="tab" aria-controls="tab-portrait">Portraits</button>
+            <button class="tab-button" data-tab="admin" role="tab" aria-controls="tab-admin">Admin</button>
+        </div>
+
+        <section class="tab-panel active" id="tab-random" data-tab="random" role="tabpanel">
             <h2>Retrieve a Random Character</h2>
-            <form id="randomForm" class="card">
-                <div class="field">
-                    <label for="randomKin">Kin filters</label>
-                    <select id="randomKin" multiple></select>
-                    <small>Select one or more kin to limit the random draw.</small>
-                </div>
-                <div class="field">
-                    <label for="randomProfession">Profession filters</label>
-                    <select id="randomProfession" multiple></select>
-                </div>
-                <button type="submit">Fetch Character</button>
-            </form>
-            <div id="randomResult" class="card result"></div>
+            <div class="panel-grid">
+                <form id="randomForm" class="card">
+                    <div class="field">
+                        <label for="randomKin">Kin filters</label>
+                        <select id="randomKin" multiple></select>
+                        <small>Select one or more kin to limit the random draw.</small>
+                    </div>
+                    <div class="field">
+                        <label for="randomProfession">Profession filters</label>
+                        <select id="randomProfession" multiple></select>
+                    </div>
+                    <button type="submit">Fetch Character</button>
+                </form>
+                <div id="randomResult" class="card result character-sheet"></div>
+            </div>
         </section>
 
-        <section>
+        <section class="tab-panel" id="tab-generate" data-tab="generate" role="tabpanel">
             <h2>Generate a New Character</h2>
-            <form id="generateForm" class="card">
-                <div class="field">
-                    <label for="generateKin">Preferred kin</label>
-                    <select id="generateKin">
-                        <option value="">Any</option>
-                    </select>
-                </div>
-                <div class="field">
-                    <label for="generateProfession">Preferred profession</label>
-                    <select id="generateProfession">
-                        <option value="">Any</option>
-                    </select>
-                </div>
-                <div class="field">
-                    <label for="generateAge">Preferred age</label>
-                    <select id="generateAge">
-                        <option value="">Any</option>
-                    </select>
-                </div>
-                <div class="field">
-                    <label for="generateName">Override name (optional)</label>
-                    <input id="generateName" type="text" placeholder="Character name">
-                </div>
-                <div class="field">
-                    <label for="generateAppearance">Override appearance (optional)</label>
-                    <textarea id="generateAppearance" rows="2" placeholder="Describe the character"></textarea>
-                </div>
-                <div class="field">
-                    <label for="generateBackground">Override background (optional)</label>
-                    <textarea id="generateBackground" rows="2" placeholder="Provide a background"></textarea>
-                </div>
-                <div class="field">
-                    <label for="generateNarrativeMode">Narrative detail source</label>
-                    <select id="generateNarrativeMode">
-                        <option value="offline" selected>Offline (fastest)</option>
-                        <option value="flyndre">Local LLM (flyndre.local)</option>
-                        <option value="openai">OpenAI</option>
-                        <option value="custom">Custom endpoint</option>
-                    </select>
-                    <small>Using an LLM enriches names, appearance, and background but can take noticeably longer.</small>
-                </div>
-                <div class="field hidden" id="llmServerGroup">
-                    <label for="llmServer">LLM server URL</label>
-                    <input id="llmServer" type="text" value="http://flyndre.local:1234" placeholder="https://api.openai.com" autocomplete="off">
-                </div>
-                <div class="field hidden" id="llmModelGroup">
-                    <label for="llmModel">LLM model</label>
-                    <input id="llmModel" type="text" value="deepseek-r1-distill-qwen-7b" placeholder="gpt-4o-mini" autocomplete="off">
-                </div>
-                <div class="field hidden" id="llmKeyGroup">
-                    <label for="llmApiKey">API key (stored locally in your browser)</label>
-                    <input id="llmApiKey" type="password" placeholder="sk-..." autocomplete="off">
-                </div>
-                <button type="submit">Generate &amp; Save</button>
-            </form>
-            <div id="generateResult" class="card result"></div>
+            <div class="panel-grid">
+                <form id="generateForm" class="card">
+                    <div class="field">
+                        <label for="generateKin">Preferred kin</label>
+                        <select id="generateKin">
+                            <option value="">Any</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="generateProfession">Preferred profession</label>
+                        <select id="generateProfession">
+                            <option value="">Any</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="generateAge">Preferred age</label>
+                        <select id="generateAge">
+                            <option value="">Any</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="generateName">Override name (optional)</label>
+                        <input id="generateName" type="text" placeholder="Character name">
+                    </div>
+                    <div class="field">
+                        <label for="generateAppearance">Override appearance (optional)</label>
+                        <textarea id="generateAppearance" rows="2" placeholder="Describe the character"></textarea>
+                    </div>
+                    <div class="field">
+                        <label for="generateBackground">Override background (optional)</label>
+                        <textarea id="generateBackground" rows="2" placeholder="Provide a background"></textarea>
+                    </div>
+                    <div class="field">
+                        <label for="generateNarrativeMode">Narrative detail source</label>
+                        <select id="generateNarrativeMode">
+                            <option value="offline" selected>Offline (fastest)</option>
+                            <option value="flyndre">Local LLM (flyndre.local)</option>
+                            <option value="openai">OpenAI</option>
+                            <option value="custom">Custom endpoint</option>
+                        </select>
+                        <small>Using an LLM enriches names, appearance, and background but can take noticeably longer.</small>
+                    </div>
+                    <div class="field hidden" id="llmServerGroup">
+                        <label for="llmServer">LLM server URL</label>
+                        <input id="llmServer" type="text" value="http://flyndre.local:1234" placeholder="https://api.openai.com" autocomplete="off">
+                    </div>
+                    <div class="field hidden" id="llmModelGroup">
+                        <label for="llmModel">LLM model</label>
+                        <input id="llmModel" type="text" value="deepseek-r1-distill-qwen-7b" placeholder="gpt-4o-mini" autocomplete="off">
+                    </div>
+                    <div class="field hidden" id="llmKeyGroup">
+                        <label for="llmApiKey">API key (stored locally in your browser)</label>
+                        <input id="llmApiKey" type="password" placeholder="sk-..." autocomplete="off">
+                    </div>
+                    <button type="submit">Generate &amp; Save</button>
+                </form>
+                <div id="generateResult" class="card result character-sheet"></div>
+            </div>
         </section>
 
-        <section>
+        <section class="tab-panel" id="tab-edit" data-tab="edit" role="tabpanel">
             <h2>Edit an Existing Character</h2>
             <form id="editSelector" class="card">
                 <div class="field">
@@ -129,7 +141,7 @@
             <div id="editStatus" class="card result"></div>
         </section>
 
-        <section>
+        <section class="tab-panel" id="tab-portrait" data-tab="portrait" role="tabpanel">
             <h2>Generate Character Portrait</h2>
             <form id="imageForm" class="card">
                 <div class="field">
@@ -155,7 +167,83 @@
             <div id="imageStatus" class="card result"></div>
             <div id="imageGallery" class="card image-gallery"></div>
         </section>
+
+        <section class="tab-panel" id="tab-admin" data-tab="admin" role="tabpanel">
+            <h2>Admin Tools</h2>
+            <div class="panel-grid">
+                <form id="bulkForm" class="card">
+                    <div class="field">
+                        <label for="bulkCount">How many characters?</label>
+                        <input id="bulkCount" type="number" min="1" max="20" value="5">
+                        <small>Limit 20 per batch.</small>
+                    </div>
+                    <div class="field">
+                        <label for="bulkKin">Preferred kin</label>
+                        <select id="bulkKin">
+                            <option value="">Any</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="bulkProfession">Preferred profession</label>
+                        <select id="bulkProfession">
+                            <option value="">Any</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="bulkAge">Preferred age</label>
+                        <select id="bulkAge">
+                            <option value="">Any</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="bulkNarrativeMode">Narrative detail source</label>
+                        <select id="bulkNarrativeMode">
+                            <option value="offline" selected>Offline (fastest)</option>
+                            <option value="flyndre">Local LLM (flyndre.local)</option>
+                            <option value="openai">OpenAI</option>
+                            <option value="custom">Custom endpoint</option>
+                        </select>
+                    </div>
+                    <div class="field hidden" id="bulkLlmServerGroup">
+                        <label for="bulkLlmServer">LLM server URL</label>
+                        <input id="bulkLlmServer" type="text" value="http://flyndre.local:1234" placeholder="https://api.openai.com" autocomplete="off">
+                    </div>
+                    <div class="field hidden" id="bulkLlmModelGroup">
+                        <label for="bulkLlmModel">LLM model</label>
+                        <input id="bulkLlmModel" type="text" value="deepseek-r1-distill-qwen-7b" placeholder="gpt-4o-mini" autocomplete="off">
+                    </div>
+                    <div class="field hidden" id="bulkLlmKeyGroup">
+                        <label for="bulkLlmApiKey">API key (stored locally in your browser)</label>
+                        <input id="bulkLlmApiKey" type="password" placeholder="sk-..." autocomplete="off">
+                    </div>
+                    <button type="submit">Generate Batch</button>
+                    <div id="bulkStatus" class="result"></div>
+                </form>
+
+                <div class="card roster-card">
+                    <div class="roster-header">
+                        <h3>Saved Characters</h3>
+                        <button type="button" id="refreshRoster">Refresh</button>
+                    </div>
+                    <div id="rosterStatus" class="result"></div>
+                    <div class="table-wrapper">
+                        <table class="roster-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Kin</th>
+                                    <th>Profession</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rosterTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
-    <script src="/app.js?v=20250210" defer></script>
+    <script src="/app.js?v=20250305" defer></script>
 </body>
 </html>

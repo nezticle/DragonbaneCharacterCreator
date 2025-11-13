@@ -7,8 +7,10 @@ func routes(_ app: Application) throws {
 
     characters.get("random", use: controller.random)
     characters.post("generate", use: controller.generate)
+    characters.post("bulk-generate", use: controller.bulkGenerate)
     characters.get(":characterID", use: controller.fetch)
     characters.put(":characterID", use: controller.update)
+    characters.delete(":characterID", use: controller.delete)
     characters.get(use: controller.index)
 
     let images = characters.grouped(":characterID", "images")
