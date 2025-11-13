@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dragonbane Character Service</title>
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/styles.css?v=20250210">
 </head>
 <body>
     <header>
@@ -128,7 +128,34 @@
             </form>
             <div id="editStatus" class="card result"></div>
         </section>
+
+        <section>
+            <h2>Generate Character Portrait</h2>
+            <form id="imageForm" class="card">
+                <div class="field">
+                    <label for="imageCharacter">Select character</label>
+                    <select id="imageCharacter">
+                        <option value="">Choose a saved character</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="imageServer">Image server URL</label>
+                    <input id="imageServer" type="text" value="https://api.openai.com" placeholder="https://api.openai.com" autocomplete="off">
+                </div>
+                <div class="field">
+                    <label for="imageModel">Image model</label>
+                    <input id="imageModel" type="text" value="gpt-image-1" placeholder="gpt-image-1" autocomplete="off">
+                </div>
+                <div class="field">
+                    <label for="imageApiKey">API key (stored locally in your browser)</label>
+                    <input id="imageApiKey" type="password" placeholder="sk-..." autocomplete="off">
+                </div>
+                <button type="submit">Generate Portrait</button>
+            </form>
+            <div id="imageStatus" class="card result"></div>
+            <div id="imageGallery" class="card image-gallery"></div>
+        </section>
     </main>
-    <script src="/app.js" defer></script>
+    <script src="/app.js?v=20250210" defer></script>
 </body>
 </html>

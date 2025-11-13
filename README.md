@@ -79,8 +79,11 @@ The server listens on port `8080` by default. Override with the `PORT` environme
 | `POST` | `/api/characters/generate` | Generate, persist, and return a new character. Accepts optional `race`, `profession`, `age`, `name`, `appearance`, and `background` overrides. |
 | `GET`  | `/api/characters/:id` | Fetch a single character by identifier. |
 | `PUT`  | `/api/characters/:id` | Update stored character fields (e.g. name, appearance, background, weakness, memento, gear). |
+| `GET`  | `/api/characters/:id/images` | List stored portrait metadata (ID, timestamp, download URL) for a character. |
+| `POST` | `/api/characters/:id/images` | Generate a portrait via a GPT-Image-compatible endpoint and store the WebP blob. |
+| `GET`  | `/api/characters/:characterId/images/:imageId` | Download a stored portrait as `image/webp`. |
 
-The bundled front-end (`Public/index.html`) consumes these endpoints to deliver three workflows: draw a random entry, generate a new one, and edit an existing record.
+The bundled front-end (`Public/index.html`) consumes these endpoints to deliver four workflows: draw a random entry, generate a new one, edit an existing record, and generate/store image portraits per character. The new "Generate Character Portrait" panel lets you pick a saved character, point at an OpenAI Images-compatible endpoint (defaults to `https://api.openai.com` / `gpt-image-1`), and trigger portrait creation right from the browser. Generated images are stored in PostgreSQL and rendered in a small gallery per character.
 
 ## Usage
 

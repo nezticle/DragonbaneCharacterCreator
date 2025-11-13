@@ -123,6 +123,33 @@ small {
     margin: 0;
 }
 
+.image-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.image-card {
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.image-card img {
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    background: rgba(15, 23, 42, 0.4);
+}
+
+.image-card figcaption {
+    font-size: 0.85rem;
+    color: rgba(226, 232, 240, 0.9);
+    text-align: center;
+}
+
 @media (max-width: 720px) {
     main {
         grid-template-columns: 1fr;

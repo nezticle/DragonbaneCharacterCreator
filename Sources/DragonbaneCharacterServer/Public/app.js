@@ -43,6 +43,11 @@ const LLM_DEFAULTS = {
   }
 };
 
+const IMAGE_DEFAULTS = {
+  server: "https://api.openai.com",
+  model: "gpt-image-1"
+};
+
 document.addEventListener("DOMContentLoaded", () => {
   populateSelect(document.getElementById("randomKin"), kinOptions, true);
   populateSelect(document.getElementById("randomProfession"), professionOptions, true);
@@ -60,6 +65,14 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("generateForm").addEventListener("submit", handleGenerateSubmit);
   document.getElementById("editCharacter").addEventListener("change", handleSelectChange);
   document.getElementById("editForm").addEventListener("submit", handleEditSubmit);
+  const imageCharacter = document.getElementById("imageCharacter");
+  if (imageCharacter) {
+    imageCharacter.addEventListener("change", handleImageSelectChange);
+  }
+  const imageForm = document.getElementById("imageForm");
+  if (imageForm) {
+    imageForm.addEventListener("submit", handleImageSubmit);
+  }
 });
 
 function populateSelect(select, options, isMultiple = false) {
@@ -178,11 +191,9 @@ async function handleGenerateSubmit(event) {
 }
 
 async function loadCharacterList() {
-  const select = document.getElementById("editCharacter");
-  if (!select) return;
-
-  const previousValue = select.value;
-  select.innerHTML = '<option value="">Choose a saved character</option>';
+  const editSelect = document.getElementById("editCharacter");
+  const imageSelect = document.getElementById("imageCharacter");
+  if (!editSelect && !imageSelect) return;
 
   try {
     const response = await fetch("/api/characters?limit=100");
@@ -190,21 +201,58 @@ async function loadCharacterList() {
       throw new Error("Unable to load characters");
     }
     const characters = await response.json();
-    characters.forEach((character) => {
-      const option = document.createElement("option");
-      option.value = character.id;
-      option.textContent = `#${character.id} — ${character.name || character.race}`;
-      select.appendChild(option);
-    });
-    if (previousValue) {
-      select.value = previousValue;
-      if (select.value === previousValue) {
-        await populateEditForm(previousValue);
+    if (editSelect) {
+      const previousValue = editSelect.value;
+      editSelect.innerHTML = '<option value="">Choose a saved character</option>';
+      characters.forEach((character) => {
+        if (!character.id) return;
+        const option = document.createElement("option");
+        option.value = character.id;
+        option.textContent = `#${character.id} — ${character.name || character.race}`;
+        editSelect.appendChild(option);
+      });
+      if (previousValue) {
+        editSelect.value = previousValue;
+        if (editSelect.value === previousValue) {
+          await populateEditForm(previousValue);
+        }
+      }
+    }
+    if (imageSelect) {
+      const previousValue = imageSelect.value;
+      imageSelect.innerHTML = '<option value="">Choose a saved character</option>';
+      characters.forEach((character) => {
+        if (!character.id) return;
+        const option = document.createElement("option");
+        option.value = character.id;
+        option.textContent = `#${character.id} — ${character.name || character.race}`;
+        imageSelect.appendChild(option);
+      });
+      if (previousValue) {
+        imageSelect.value = previousValue;
+      }
+      if (imageSelect.value) {
+        await loadImageGallery(imageSelect.value);
+      } else {
+        const imageStatus = document.getElementById("imageStatus");
+        if (imageStatus) {
+          imageStatus.textContent = "Select a character to view portraits.";
+        }
+        const gallery = document.getElementById("imageGallery");
+        if (gallery) {
+          gallery.innerHTML = "";
+        }
       }
     }
   } catch (error) {
-    const status = document.getElementById("editStatus");
-    status.textContent = error.message;
+    const editStatus = document.getElementById("editStatus");
+    if (editStatus) {
+      editStatus.textContent = error.message;
+    }
+    const imageStatus = document.getElementById("imageStatus");
+    if (imageStatus) {
+      imageStatus.textContent = error.message;
+    }
   }
 }
 
@@ -274,6 +322,92 @@ async function handleEditSubmit(event) {
   }
 }
 
+async function handleImageSelectChange(event) {
+  await loadImageGallery(event.target.value);
+}
+
+async function handleImageSubmit(event) {
+  event.preventDefault();
+  const characterId = document.getElementById("imageCharacter").value;
+  const status = document.getElementById("imageStatus");
+  if (!characterId) {
+    setStatus(status, "Select a character first.");
+    return;
+  }
+
+  const payload = {};
+  const server = document.getElementById("imageServer").value.trim();
+  const model = document.getElementById("imageModel").value.trim();
+  const apiKey = document.getElementById("imageApiKey").value.trim();
+  if (server) payload.server = server;
+  if (model) payload.model = model;
+  if (apiKey) payload.apiKey = apiKey;
+
+  setBusy(status, "Requesting portrait from the image model...");
+
+  try {
+    const response = await fetch(`/api/characters/${characterId}/images`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(Object.keys(payload).length ? payload : { })
+    });
+    if (!response.ok) {
+      const message = await extractError(response);
+      throw new Error(message || "Image generation failed.");
+    }
+    const image = await response.json();
+    await loadImageGallery(characterId);
+    setStatus(status, `Saved portrait #${image.id}.`);
+  } catch (error) {
+    setStatus(status, error.message);
+  }
+}
+
+async function loadImageGallery(characterId) {
+  const gallery = document.getElementById("imageGallery");
+  const status = document.getElementById("imageStatus");
+  if (!gallery || !status) return;
+
+  if (!characterId) {
+    gallery.innerHTML = "";
+    status.textContent = "Select a character to view portraits.";
+    return;
+  }
+
+  status.textContent = "Loading portraits...";
+
+  try {
+    const response = await fetch(`/api/characters/${characterId}/images`);
+    if (!response.ok) {
+      const message = await extractError(response);
+      throw new Error(message || "Unable to load portraits.");
+    }
+    const images = await response.json();
+    gallery.innerHTML = "";
+    if (!images.length) {
+      status.textContent = "No portraits have been generated yet.";
+      return;
+    }
+    status.textContent = "";
+    images.forEach((image) => {
+      const figure = document.createElement("figure");
+      figure.className = "image-card";
+      const img = document.createElement("img");
+      img.alt = `Character portrait ${image.id}`;
+      img.loading = "lazy";
+      img.src = image.downloadURL;
+      const caption = document.createElement("figcaption");
+      caption.textContent = `#${image.id} • ${formatTimestamp(image.createdAt)}`;
+      figure.appendChild(img);
+      figure.appendChild(caption);
+      gallery.appendChild(figure);
+    });
+  } catch (error) {
+    status.textContent = error.message;
+    gallery.innerHTML = "";
+  }
+}
+
 function updateOptionLabel(select, character) {
   const option = Array.from(select.options).find((opt) => opt.value === String(character.id));
   if (option) {
@@ -307,6 +441,15 @@ function renderCharacter(container, character) {
   lines.push(`Appearance: ${character.appearance}`);
   lines.push(`Background: ${character.background}`);
   container.textContent = lines.join("\n");
+}
+
+function formatTimestamp(value) {
+  if (!value) return "Just now";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+  return date.toLocaleString();
 }
 
 function setBusy(element, message) {

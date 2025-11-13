@@ -279,10 +279,3 @@ private struct LLMGenerationConfig {
         return URI(string: "\(trimmed)/v1/chat/completions")
     }
 }
-
-private extension String {
-    var trimmedOrNil: String? {
-        let value = trimmingCharacters(in: .whitespacesAndNewlines)
-        return value.isEmpty ? nil : value
-    }
-}

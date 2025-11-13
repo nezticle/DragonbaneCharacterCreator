@@ -138,6 +138,10 @@ final class CharacterModel: Model, Content {
             background: background
         )
     }
+
+    func toCharacter() throws -> Character {
+        try toResponse().toCharacter()
+    }
 }
 
 extension CharacterModel: @unchecked Sendable {}
@@ -163,6 +167,30 @@ struct CharacterResponse: Content {
     let memento: String
     let appearance: String
     let background: String
+
+    func toCharacter() -> Character {
+        Character(
+            name: name,
+            race: race,
+            profession: profession,
+            age: age,
+            heroicAbilities: heroicAbilities,
+            trainedSkills: trainedSkills,
+            magic: magic,
+            weakness: weakness,
+            strength: strength,
+            constitution: constitution,
+            agility: agility,
+            intelligence: intelligence,
+            willpower: willpower,
+            charisma: charisma,
+            gear: gear,
+            memento: memento,
+            appearanceSeeds: appearanceSeeds,
+            background: background,
+            appearance: appearance
+        )
+    }
 }
 
 struct CharacterUpdateRequest: Content {
