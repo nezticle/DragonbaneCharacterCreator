@@ -33,10 +33,6 @@ const professionOptions = [
 
 const ageOptions = ["Young", "Adult", "Old"];
 const LLM_DEFAULTS = {
-  flyndre: {
-    server: "http://flyndre.local:1234",
-    model: "deepseek-r1-distill-qwen-7b"
-  },
   openai: {
     server: "https://api.openai.com",
     model: "gpt-4o-mini"
@@ -49,9 +45,11 @@ const IMAGE_DEFAULTS = {
 };
 
 const ADMIN_TOKEN_STORAGE_KEY = "dragonbaneAdminToken";
+let appConfig = null;
 
 if (typeof document !== "undefined") {
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("DOMContentLoaded", async () => {
+    await loadAppConfig();
     setupTabs();
     setupAdminTokenField();
     populateSelect(document.getElementById("randomKin"), kinOptions, true);
@@ -128,6 +126,40 @@ if (typeof document !== "undefined") {
   });
 }
 
+async function loadAppConfig() {
+  if (typeof fetch === "undefined") {
+    return;
+  }
+  try {
+    const response = await fetch("/api/config");
+    if (!response.ok) {
+      throw new Error(`Failed to load config: ${response.status}`);
+    }
+    const data = await response.json();
+    appConfig = { ...data };
+    applyNarrativeModeAvailability();
+  } catch (error) {
+    console.warn("Unable to load UI configuration:", error);
+  }
+}
+
+function applyNarrativeModeAvailability() {
+  if (!appConfig || appConfig.localLLMEnabled) {
+    return;
+  }
+  ["generateNarrativeMode", "bulkNarrativeMode"].forEach((id) => {
+    const select = document.getElementById(id);
+    if (!select) return;
+    const option = select.querySelector('option[value="local"]');
+    if (!option) return;
+    const wasSelected = option.selected;
+    option.remove();
+    if (wasSelected) {
+      select.value = "offline";
+    }
+  });
+}
+
 function setupTabs() {
   const buttons = document.querySelectorAll(".tab-button");
   const panels = document.querySelectorAll(".tab-panel");
@@ -180,13 +212,13 @@ function configureNarrativeModeControls(config) {
   if (!select) return;
   const handle = () => {
     const mode = select.value;
-    const showLLMFields = mode !== "offline";
-    toggleField(config.serverGroupId, showLLMFields);
-    toggleField(config.modelGroupId, showLLMFields);
+    const showEndpointFields = mode === "openai" || mode === "custom";
+    toggleField(config.serverGroupId, showEndpointFields);
+    toggleField(config.modelGroupId, showEndpointFields);
     toggleField(config.keyGroupId, mode === "openai" || mode === "custom");
 
-    if (mode !== "custom" && mode !== "offline" && LLM_DEFAULTS[mode]) {
-      const defaults = LLM_DEFAULTS[mode];
+    if (mode === "openai" && LLM_DEFAULTS.openai) {
+      const defaults = LLM_DEFAULTS.openai;
       const serverInput = document.getElementById(config.serverInputId);
       const modelInput = document.getElementById(config.modelInputId);
       if (serverInput) serverInput.value = defaults.server;
@@ -247,16 +279,31 @@ async function handleGenerateSubmit(event) {
   const useLLM = narrativeMode !== "offline";
   if (useLLM) {
     payload.narrativeMode = "llm";
-    const server = getTrimmedValue("llmServer");
-    const model = getTrimmedValue("llmModel");
+    const needsEndpoint = narrativeMode === "openai" || narrativeMode === "custom";
+    const server = needsEndpoint ? getTrimmedValue("llmServer") : "";
+    const model = needsEndpoint ? getTrimmedValue("llmModel") : "";
     const apiKey = getTrimmedValue("llmApiKey");
-    if (server) payload.llmServer = server;
-    if (model) payload.llmModel = model;
+
+    if (needsEndpoint) {
+      if (!server) {
+        setStatus(resultContainer, "Provide an LLM server URL.");
+        return;
+      }
+      if (!model) {
+        setStatus(resultContainer, "Provide an LLM model identifier.");
+        return;
+      }
+      payload.llmServer = server;
+      payload.llmModel = model;
+    }
+
     if (narrativeMode === "openai" && !apiKey) {
       setStatus(resultContainer, "OpenAI requests require an API key.");
       return;
     }
-    if (apiKey) payload.llmApiKey = apiKey;
+    if (apiKey) {
+      payload.llmApiKey = apiKey;
+    }
     setBusy(resultContainer, "Generating detailed narrative via LLM...");
   } else {
     setBusy(resultContainer, "Generating character...");
@@ -301,16 +348,31 @@ async function handleBulkSubmit(event) {
   const useLLM = mode !== "offline";
   if (useLLM) {
     payload.narrativeMode = "llm";
-    const server = getTrimmedValue("bulkLlmServer");
-    const model = getTrimmedValue("bulkLlmModel");
+    const needsEndpoint = mode === "openai" || mode === "custom";
+    const server = needsEndpoint ? getTrimmedValue("bulkLlmServer") : "";
+    const model = needsEndpoint ? getTrimmedValue("bulkLlmModel") : "";
     const apiKey = getTrimmedValue("bulkLlmApiKey");
-    if (server) payload.llmServer = server;
-    if (model) payload.llmModel = model;
+
+    if (needsEndpoint) {
+      if (!server) {
+        setStatus(status, "Provide an LLM server URL.");
+        return;
+      }
+      if (!model) {
+        setStatus(status, "Provide an LLM model identifier.");
+        return;
+      }
+      payload.llmServer = server;
+      payload.llmModel = model;
+    }
+
     if (mode === "openai" && !apiKey) {
       setStatus(status, "OpenAI requests require an API key.");
       return;
     }
-    if (apiKey) payload.llmApiKey = apiKey;
+    if (apiKey) {
+      payload.llmApiKey = apiKey;
+    }
   }
 
   setBusy(status, `Generating ${count} character${count === 1 ? "" : "s"}...`);

@@ -77,7 +77,7 @@
                         <label for="generateNarrativeMode">Narrative detail source</label>
                         <select id="generateNarrativeMode">
                             <option value="offline" selected>Offline (fastest)</option>
-                            <option value="flyndre">Local LLM (flyndre.local)</option>
+                            <option value="local">Local LLM</option>
                             <option value="openai">OpenAI</option>
                             <option value="custom">Custom endpoint</option>
                         </select>
@@ -85,11 +85,11 @@
                     </div>
                     <div class="field hidden" id="llmServerGroup">
                         <label for="llmServer">LLM server URL</label>
-                        <input id="llmServer" type="text" value="http://flyndre.local:1234" placeholder="https://api.openai.com" autocomplete="off">
+                        <input id="llmServer" type="text" placeholder="https://api.openai.com" autocomplete="off">
                     </div>
                     <div class="field hidden" id="llmModelGroup">
                         <label for="llmModel">LLM model</label>
-                        <input id="llmModel" type="text" value="deepseek-r1-distill-qwen-7b" placeholder="gpt-4o-mini" autocomplete="off">
+                        <input id="llmModel" type="text" placeholder="gpt-4o-mini" autocomplete="off">
                     </div>
                     <div class="field hidden" id="llmKeyGroup">
                         <label for="llmApiKey">API key (stored locally in your browser)</label>
@@ -207,18 +207,18 @@
                         <label for="bulkNarrativeMode">Narrative detail source</label>
                         <select id="bulkNarrativeMode">
                             <option value="offline" selected>Offline (fastest)</option>
-                            <option value="flyndre">Local LLM (flyndre.local)</option>
+                            <option value="local">Local LLM</option>
                             <option value="openai">OpenAI</option>
                             <option value="custom">Custom endpoint</option>
                         </select>
                     </div>
                     <div class="field hidden" id="bulkLlmServerGroup">
                         <label for="bulkLlmServer">LLM server URL</label>
-                        <input id="bulkLlmServer" type="text" value="http://flyndre.local:1234" placeholder="https://api.openai.com" autocomplete="off">
+                        <input id="bulkLlmServer" type="text" placeholder="https://api.openai.com" autocomplete="off">
                     </div>
                     <div class="field hidden" id="bulkLlmModelGroup">
                         <label for="bulkLlmModel">LLM model</label>
-                        <input id="bulkLlmModel" type="text" value="deepseek-r1-distill-qwen-7b" placeholder="gpt-4o-mini" autocomplete="off">
+                        <input id="bulkLlmModel" type="text" placeholder="gpt-4o-mini" autocomplete="off">
                     </div>
                     <div class="field hidden" id="bulkLlmKeyGroup">
                         <label for="bulkLlmApiKey">API key (stored locally in your browser)</label>

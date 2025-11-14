@@ -41,7 +41,7 @@ The CLI is configured via command-line flags or environment variables:
 
 The `DragonbaneCharacterServer` target exposes a REST API and static web UI for managing characters without invoking the OpenAI-powered embellishment pipeline. Characters generated through the service rely on the offline narrative helpers added to `DragonbaneCharacterCore`.
 
-The UI also exposes an optional "LLM" path for richer names, backgrounds, and appearance text. When enabled it calls a `/v1/chat/completions`-compatible endpoint (defaulting to `http://flyndre.local:1234`, configurable via `LLM_SERVER`/`LLM_MODEL`) and applies the returned summary unless the user specified overrides. Selecting the OpenAI option reveals an API-key input so each browser session can supply its own credentials.
+The UI also exposes an optional "LLM" path for richer names, backgrounds, and appearance text. When enabled it calls a `/v1/chat/completions`-compatible endpoint (configurable via the dropdown) and applies the returned summary unless the user specified overrides. Selecting the OpenAI option reveals an API-key input so each browser session can supply its own credentials.
 
 ### Quick start with Docker/Podman Compose
 
@@ -99,8 +99,8 @@ The CLI and server expose a few environment hooks so you can tune how characters
 
 | Variable | Default | Description |
 | --- | --- | --- |
-| `LLM_SERVER` | `http://flyndre.local:1234` | `/v1/chat/completions`-compatible endpoint used when the UI's "LLM" option is enabled. |
-| `LLM_MODEL` | `deepseek-r1-distill-qwen-7b` | Model identifier sent to `LLM_SERVER`. |
+| `LLM_SERVER` | _unset_ | `/v1/chat/completions`-compatible endpoint used when the UI's "LLM" option is enabled. Required to surface the "Local LLM" option in the UI. |
+| `LLM_MODEL` | _unset_ | Model identifier sent to `LLM_SERVER`. Required alongside `LLM_SERVER` to surface the "Local LLM" option. |
 | `IMAGE_SERVER` | `https://api.openai.com`† | Base URL for the portrait generation endpoint. |
 | `IMAGE_MODEL` | `gpt-image-1` | Image model requested when generating portraits. |
 | `IMAGE_API_KEY` | `OPENAI_API_KEY` | API key sent to the portrait generation endpoint. |

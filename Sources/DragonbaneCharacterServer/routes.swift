@@ -3,6 +3,8 @@ import Vapor
 func routes(_ app: Application) throws {
     let controller = CharacterController()
     let imageController = CharacterImageController()
+    let configController = ConfigController()
+    app.get("api", "config", use: configController.fetch)
     let characters = app.grouped("api", "characters")
 
     characters.get("random", use: controller.random)

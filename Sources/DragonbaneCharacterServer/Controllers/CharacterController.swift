@@ -124,7 +124,7 @@ struct CharacterController {
 
         var character = try generateCharacter(matching: filters)
         if (payload?.narrativeMode ?? .offline) == .llm {
-            let config = llmConfig(from: payload)
+            let config = try llmConfig(from: payload)
             if let summary = try await enrichNarrative(for: character, config: config, on: req) {
                 if payload?.name == nil { character.setName(summary.name) }
                 if payload?.appearance == nil { character.setAppearance(summary.appearance) }
@@ -269,12 +269,22 @@ struct CharacterController {
         return try? JSONDecoder().decode(CharacterSummary.self, from: data)
     }
 
-    private func llmConfig(from payload: GenerateRequest?) -> LLMGenerationConfig {
-        let defaultServer = Environment.get("LLM_SERVER") ?? "http://flyndre.local:1234"
-        let defaultModel = Environment.get("LLM_MODEL") ?? "deepseek-r1-distill-qwen-7b"
+    private func llmConfig(from payload: GenerateRequest?) throws -> LLMGenerationConfig {
+        let envServer = Environment.get("LLM_SERVER")?.trimmedOrNil
+        let envModel = Environment.get("LLM_MODEL")?.trimmedOrNil
+        let server = payload?.llmServer?.trimmedOrNil ?? envServer
+        let model = payload?.llmModel?.trimmedOrNil ?? envModel
+
+        guard let server else {
+            throw Abort(.badRequest, reason: "LLM server URL is missing. Provide one in the request or set LLM_SERVER.")
+        }
+        guard let model else {
+            throw Abort(.badRequest, reason: "LLM model is missing. Provide one in the request or set LLM_MODEL.")
+        }
+
         return LLMGenerationConfig(
-            server: payload?.llmServer?.trimmedOrNil ?? defaultServer,
-            model: payload?.llmModel?.trimmedOrNil ?? defaultModel,
+            server: server,
+            model: model,
             apiKey: payload?.llmApiKey?.trimmedOrNil
         )
     }
