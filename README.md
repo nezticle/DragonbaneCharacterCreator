@@ -70,6 +70,49 @@ swift run DragonbaneCharacterServer
 
 The server listens on port `8080` by default. Override with the `PORT` environment variable as needed.
 
+### Environment Variables
+
+The CLI and server expose a few environment hooks so you can tune how characters are generated, stored, and edited. Flags always win over environment values, and `DATABASE_URL` takes precedence over the `POSTGRES_*` settings.
+
+#### CLI (`DragonbaneCharacterCLI`)
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `OPENAI_SERVER` | `http://192.168.86.220:1234` | Base URL used by the CLI when `--server`/`-s` is omitted. |
+| `OPENAI_API_KEY` | _empty_ | API key supplied to the CLI when `--api-key`/`-k` is not provided; also reused by the server as the default image API key. |
+| `OPENAI_MODEL` | `deepseek-r1-distill-qwen-7b` | Chat-completions model used by the CLI when `--model`/`-m` is not set. |
+
+#### Server & Database (`DragonbaneCharacterServer`)
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `DATABASE_URL` | _unset_ | Full PostgreSQL connection string (e.g. `postgres://user:pass@host:port/db`). When present it overrides all `POSTGRES_*` values. |
+| `DATABASE_TLS` | `enabled` | Set to `disable` to turn off TLS when using `DATABASE_URL`. |
+| `POSTGRES_HOST` | `localhost` | Hostname for PostgreSQL when `DATABASE_URL` is not provided. |
+| `POSTGRES_PORT` | `5432` | PostgreSQL port when `DATABASE_URL` is not provided. |
+| `POSTGRES_USER` | `dragonbane` | Database username for the server connection. |
+| `POSTGRES_PASSWORD` | `dragonbane` | Database password for the server connection. |
+| `POSTGRES_DB` | `dragonbane` | Database name the server should use. |
+| `PORT` | `8080` | HTTP port the Vapor server binds to. |
+
+#### LLM & Image integrations
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `LLM_SERVER` | `http://flyndre.local:1234` | `/v1/chat/completions`-compatible endpoint used when the UI's "LLM" option is enabled. |
+| `LLM_MODEL` | `deepseek-r1-distill-qwen-7b` | Model identifier sent to `LLM_SERVER`. |
+| `IMAGE_SERVER` | `https://api.openai.com`† | Base URL for the portrait generation endpoint. |
+| `IMAGE_MODEL` | `gpt-image-1` | Image model requested when generating portraits. |
+| `IMAGE_API_KEY` | `OPENAI_API_KEY` | API key sent to the portrait generation endpoint. |
+
+† If `IMAGE_SERVER` is unset the server falls back to `OPENAI_SERVER` (if provided) and then to `https://api.openai.com`.
+
+#### Admin & write access
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `ADMIN_API_TOKEN` | _unset_ | Bearer token the server requires for any write route (character creation, updates, deletions, or portrait generation). The web UI prompts for this value; supplying it unlocks in-browser editing. When the variable is missing the server logs a warning and keeps all write APIs disabled. |
+
 ### REST endpoints
 
 | Method | Path | Description |
