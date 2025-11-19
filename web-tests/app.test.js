@@ -338,6 +338,10 @@ function sampleCharacter(overrides = {}) {
     charisma: 15,
     heroicAbilities: ["Defender"],
     trainedSkills: ["Swordplay"],
+    skills: [
+      { skill: "Acrobatics", value: 6 },
+      { skill: "Swords", value: 10 }
+    ],
     magic: [],
     gear: ["Sword", "Shield"],
     weakness: "Pride",
@@ -367,6 +371,7 @@ runClientTest("renderCharacter builds stat and story blocks", ({ client, documen
   client.renderCharacter(container, sampleCharacter());
   assert(container.classList.contains("character-sheet"));
   assert.equal(container.querySelectorAll(".stat-card").length, 6);
+  assert(container.textContent.includes("Acrobatics: 6"));
   assert(container.textContent.includes("Family crest"));
 });
 

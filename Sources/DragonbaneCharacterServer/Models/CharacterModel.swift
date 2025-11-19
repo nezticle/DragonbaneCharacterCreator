@@ -114,6 +114,15 @@ final class CharacterModel: Model, Content {
             }
             return skill
         }
+        let skillLevels = calculateSkillLevels(
+            strength: strength,
+            constitution: constitution,
+            agility: agility,
+            intelligence: intelligence,
+            willpower: willpower,
+            charisma: charisma,
+            trainedSkills: skills
+        )
 
         return CharacterResponse(
             id: id,
@@ -129,6 +138,7 @@ final class CharacterModel: Model, Content {
             charisma: charisma,
             heroicAbilities: heroic,
             trainedSkills: skills,
+            skills: skillLevels,
             magic: magic,
             gear: gear,
             appearanceSeeds: appearanceSeeds,
@@ -160,6 +170,7 @@ struct CharacterResponse: Content {
     let charisma: Int
     let heroicAbilities: [HeroicAbilities]
     let trainedSkills: [Skills]
+    let skills: [SkillLevel]
     let magic: [String]
     let gear: [String]
     let appearanceSeeds: [String]
@@ -255,6 +266,7 @@ extension CharacterResponse {
             charisma: character.charisma,
             heroicAbilities: character.heroicAbilities,
             trainedSkills: character.trainedSkills,
+            skills: character.skillLevels,
             magic: character.magic,
             gear: character.gear,
             appearanceSeeds: character.appearanceSeeds,

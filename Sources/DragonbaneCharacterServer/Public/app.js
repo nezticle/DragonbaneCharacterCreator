@@ -696,7 +696,11 @@ function renderCharacter(container, character) {
   const listGrid = document.createElement("div");
   listGrid.className = "list-grid";
   listGrid.appendChild(createListCard("Heroic Abilities", character.heroicAbilities));
-  listGrid.appendChild(createListCard("Trained Skills", character.trainedSkills));
+  if (Array.isArray(character.skills) && character.skills.length) {
+    listGrid.appendChild(createSkillsCard(character.skills));
+  } else {
+    listGrid.appendChild(createListCard("Trained Skills", character.trainedSkills));
+  }
   listGrid.appendChild(createListCard("Magic", character.magic));
   listGrid.appendChild(createListCard("Gear", character.gear));
   container.appendChild(listGrid);
@@ -740,6 +744,34 @@ function createListCard(title, items) {
   items.forEach((item) => {
     const li = document.createElement("li");
     li.textContent = item;
+    list.appendChild(li);
+  });
+  card.appendChild(list);
+  return card;
+}
+
+function createSkillsCard(skills) {
+  const card = document.createElement("div");
+  card.className = "list-card";
+  const heading = document.createElement("h3");
+  heading.textContent = "Skills";
+  card.appendChild(heading);
+  if (!Array.isArray(skills) || skills.length === 0) {
+    const empty = document.createElement("p");
+    empty.textContent = "None";
+    card.appendChild(empty);
+    return card;
+  }
+  const list = document.createElement("ul");
+  skills.forEach((entry) => {
+    const li = document.createElement("li");
+    if (entry && typeof entry === "object") {
+      const label = entry.skill ?? entry.name ?? "Unknown";
+      const value = typeof entry.value === "number" ? entry.value : "—";
+      li.textContent = `${label}: ${value}`;
+    } else {
+      li.textContent = entry ?? "";
+    }
     list.appendChild(li);
   });
   card.appendChild(list);
@@ -956,6 +988,7 @@ if (typeof module !== "undefined" && module.exports) {
     clampBatchCount,
     createStatCard,
     createListCard,
+    createSkillsCard,
     createTextCard
   };
 }

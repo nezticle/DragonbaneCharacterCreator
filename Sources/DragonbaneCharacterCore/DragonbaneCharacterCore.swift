@@ -199,6 +199,81 @@ public enum Skills: String, Codable, CaseIterable, Sendable {
     case swords = "Swords"
 }
 
+public struct SkillLevel: Codable, Sendable {
+    public let skill: Skills
+    public let value: Int
+}
+
+extension Skills {
+    var primaryAttribute: Attributes {
+        switch self {
+        case .acrobatics, .evade, .huntingandfishing, .riding, .slightofhand,
+             .sneaking, .swimming, .bows, .crossbows, .knives, .slings, .staves:
+            return .agl
+        case .awareness, .beastlore, .bushcraft, .healing, .language,
+             .mythsandlegends, .seamenship, .spothidden:
+            return .int
+        case .bartering, .bluffing, .performance, .persuasion:
+            return .cha
+        case .crafting, .axes, .brawling, .hammers, .spears, .swords:
+            return .str
+        }
+    }
+}
+
+private func baseSkillLevel(for attributeScore: Int) -> Int {
+    switch attributeScore {
+    case ..<6:
+        return 3
+    case 6...8:
+        return 4
+    case 9...12:
+        return 5
+    case 13...15:
+        return 6
+    default:
+        return 7
+    }
+}
+
+public func calculateSkillLevels(strength: Int,
+                                 constitution: Int,
+                                 agility: Int,
+                                 intelligence: Int,
+                                 willpower: Int,
+                                 charisma: Int,
+                                 trainedSkills: [Skills]) -> [SkillLevel] {
+    let attributes: [Attributes: Int] = [
+        .str: strength,
+        .con: constitution,
+        .agl: agility,
+        .int: intelligence,
+        .wil: willpower,
+        .cha: charisma
+    ]
+    let trainedSet = Set(trainedSkills)
+    return Skills.allCases.map { skill in
+        let attributeScore = attributes[skill.primaryAttribute] ?? 0
+        let base = baseSkillLevel(for: attributeScore)
+        let value = trainedSet.contains(skill) ? base * 2 : base
+        return SkillLevel(skill: skill, value: value)
+    }
+}
+
+public extension Character {
+    var skillLevels: [SkillLevel] {
+        calculateSkillLevels(
+            strength: strength,
+            constitution: constitution,
+            agility: agility,
+            intelligence: intelligence,
+            willpower: willpower,
+            charisma: charisma,
+            trainedSkills: trainedSkills
+        )
+    }
+}
+
 public enum HeroicAbilities: String, Codable, CaseIterable, Sendable {
     case assassin = "Assassin"
     case backstabbing = "Backstabbing"
@@ -719,6 +794,8 @@ public struct Character: Sendable {
         Age: \(age.rawValue)
         Abilities: \(heroicAbilities.map { $0.rawValue }.joined(separator: ", "))
         Trained Skills: \(trainedSkills.map { $0.rawValue }.joined(separator: ", "))
+        Skills:
+        \(skillLevels.map { "          \($0.skill.rawValue): \($0.value)" }.joined(separator: "\n"))
         Magic: \(magic.joined(separator: ", "))
         Weakness: \(weakness)
         Attributes:
