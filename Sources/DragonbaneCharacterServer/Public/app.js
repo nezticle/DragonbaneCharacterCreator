@@ -712,6 +712,21 @@ function renderCharacter(container, character) {
   storyGrid.appendChild(createTextCard("Appearance", character.appearance));
   storyGrid.appendChild(createTextCard("Background", character.background));
   container.appendChild(storyGrid);
+
+  if (character.id) {
+    const adoptSection = document.createElement("div");
+    adoptSection.className = "sheet-adopt";
+    const adoptButton = document.createElement("button");
+    adoptButton.type = "button";
+    adoptButton.className = "secondary";
+    adoptButton.textContent = "Adopt Character";
+    const adoptStatus = document.createElement("p");
+    adoptStatus.className = "sheet-adopt-status";
+    adoptButton.addEventListener("click", () => adoptCharacter(character.id, adoptButton, adoptStatus));
+    adoptSection.appendChild(adoptButton);
+    adoptSection.appendChild(adoptStatus);
+    container.appendChild(adoptSection);
+  }
 }
 
 function createStatCard(label, value) {
@@ -898,6 +913,42 @@ function clampBatchCount(value) {
 function getValue(id) {
   const element = document.getElementById(id);
   return element ? element.value : "";
+}
+
+async function adoptCharacter(characterId, button, statusElement) {
+  if (!characterId) return;
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Adopting...";
+  }
+  if (statusElement) {
+    statusElement.textContent = "Creating interactive sheet...";
+  }
+  try {
+    const response = await fetch("/api/sheets/adopt", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ characterID: characterId })
+    });
+    if (!response.ok) {
+      const message = await extractError(response);
+      throw new Error(message || "Adoption failed.");
+    }
+    const sheet = await response.json();
+    const url = `${window.location.origin}/sheet/${sheet.sheetId}`;
+    if (statusElement) {
+      statusElement.innerHTML = `Interactive sheet ready: <a href="${url}" target="_blank" rel="noopener">${url}</a>`;
+    }
+  } catch (error) {
+    if (statusElement) {
+      statusElement.textContent = error.message;
+    }
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = "Adopt Character";
+    }
+  }
 }
 
 function getTrimmedValue(id) {

@@ -29,6 +29,7 @@ public func configure(_ app: Application) throws {
 
     app.migrations.add(CreateCharacterMigration())
     app.migrations.add(CreateCharacterImageMigration())
+    app.migrations.add(CreateCharacterSheetMigration())
 
     // Ensure static resources packaged with the executable are discoverable.
     app.directory.publicDirectory = app.directory.resourcesDirectory + "Public/"

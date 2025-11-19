@@ -4,12 +4,23 @@ func routes(_ app: Application) throws {
     let controller = CharacterController()
     let imageController = CharacterImageController()
     let configController = ConfigController()
+    let sheetController = CharacterSheetController()
     app.get("api", "config", use: configController.fetch)
     let characters = app.grouped("api", "characters")
 
     characters.get("random", use: controller.random)
     characters.get(":characterID", use: controller.fetch)
     characters.get(use: controller.index)
+
+    let sheets = app.grouped("api", "sheets")
+    sheets.post("adopt", use: sheetController.adopt)
+    sheets.get(":sheetID", use: sheetController.fetch)
+    sheets.put(":sheetID", use: sheetController.update)
+
+    app.get("sheet", ":sheetID") { req -> Response in
+        let path = req.application.directory.publicDirectory + "sheet.html"
+        return req.fileio.streamFile(at: path)
+    }
 
     let images = characters.grouped(":characterID", "images")
     images.get(use: imageController.list)

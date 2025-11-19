@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dragonbane Interactive Sheet</title>
+    <link rel="stylesheet" href="/styles.css?v=20250305">
+</head>
+<body class="sheet-page">
+    <header class="sheet-page__hero">
+        <div>
+            <p class="eyebrow">Dragonbane Character Service</p>
+            <h1>Interactive Character Sheet</h1>
+            <p class="subtitle">Adopted heroes live here. Keep this URL private if you wish to guard your adventurer.</p>
+        </div>
+        <a href="/" class="link-button">Back to generator</a>
+    </header>
+    <main id="sheetApp" data-sheet-id="">
+        <div id="sheetLoading" class="sheet-card sheet-loading">
+            <div class="spinner" aria-hidden="true"></div>
+            <span>Loading character sheet...</span>
+        </div>
+        <div id="sheetError" class="sheet-card sheet-error hidden" role="alert"></div>
+        <form id="sheetForm" class="sheet-form hidden" autocomplete="off">
+            <div class="sheet-toolbar">
+                <div class="save-group">
+                    <span id="saveStatus">Preparing sheet...</span>
+                    <button type="button" id="saveButton">Save now</button>
+                </div>
+            </div>
+
+            <section class="sheet-section identity" data-section="identity">
+                <div class="section-title">
+                    <h2>Identity</h2>
+                    <button type="button" class="lock-button" data-lock="identity">Lock</button>
+                </div>
+                <div class="field">
+                    <label for="characterName">Character Name</label>
+                    <input id="characterName" data-bind="characterName">
+                </div>
+                <div class="field">
+                    <label for="playerName">Player Name</label>
+                    <input id="playerName" data-bind="playerName">
+                </div>
+                <div class="field">
+                    <label for="kinField">Kin</label>
+                    <select id="kinField" data-bind="kin">
+                        <option value="">Choose kin</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="professionField">Profession</label>
+                    <select id="professionField" data-bind="profession">
+                        <option value="">Choose profession</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="ageField">Age</label>
+                    <select id="ageField" data-bind="age">
+                        <option value="">Choose age</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="weaknessField">Weakness</label>
+                    <textarea id="weaknessField" rows="2" data-bind="weakness"></textarea>
+                </div>
+                <div class="field">
+                    <label for="appearanceField">Appearance</label>
+                    <textarea id="appearanceField" rows="5" data-bind="appearance"></textarea>
+                </div>
+            </section>
+
+            <section class="sheet-section attributes" data-section="attributes">
+                <div class="section-title">
+                    <h2>Attributes & Conditions</h2>
+                    <button type="button" class="lock-button" data-lock="attributes">Lock</button>
+                </div>
+                <div class="attribute-grid">
+                    <div class="attribute-card">
+                        <label>STR</label>
+                        <input type="number" min="0" data-type="number" data-bind="attributes.strength">
+                        <label class="condition-pill">
+                            <input type="checkbox" data-bind="conditions.exhausted"> Exhausted
+                        </label>
+                    </div>
+                    <div class="attribute-card">
+                        <label>CON</label>
+                        <input type="number" min="0" data-type="number" data-bind="attributes.constitution">
+                        <label class="condition-pill">
+                            <input type="checkbox" data-bind="conditions.sickly"> Sickly
+                        </label>
+                    </div>
+                    <div class="attribute-card">
+                        <label>AGL</label>
+                        <input type="number" min="0" data-type="number" data-bind="attributes.agility">
+                        <label class="condition-pill">
+                            <input type="checkbox" data-bind="conditions.dazed"> Dazed
+                        </label>
+                    </div>
+                    <div class="attribute-card">
+                        <label>INT</label>
+                        <input type="number" min="0" data-type="number" data-bind="attributes.intelligence">
+                        <label class="condition-pill">
+                            <input type="checkbox" data-bind="conditions.angry"> Angry
+                        </label>
+                    </div>
+                    <div class="attribute-card">
+                        <label>WIL</label>
+                        <input type="number" min="0" data-type="number" data-bind="attributes.willpower">
+                        <label class="condition-pill">
+                            <input type="checkbox" data-bind="conditions.scared"> Scared
+                        </label>
+                    </div>
+                    <div class="attribute-card">
+                        <label>CHA</label>
+                        <input type="number" min="0" data-type="number" data-bind="attributes.charisma">
+                        <label class="condition-pill">
+                            <input type="checkbox" data-bind="conditions.disheartened"> Disheartened
+                        </label>
+                    </div>
+                </div>
+                <div class="derived-grid">
+                    <div class="field">
+                        <label>Damage Bonus (STR)</label>
+                        <input id="damageBonusStr" readonly>
+                    </div>
+                    <div class="field">
+                        <label>Damage Bonus (AGL)</label>
+                        <input id="damageBonusAgl" readonly>
+                    </div>
+                    <div class="field">
+                        <label>Movement</label>
+                        <input type="number" readonly data-type="number" data-bind="movement">
+                    </div>
+                </div>
+            </section>
+
+            <section class="sheet-section dual" data-section="talents">
+                <div class="section-title">
+                    <h2>Abilities & Skills</h2>
+                    <button type="button" class="lock-button" data-lock="talents">Lock</button>
+                </div>
+                <div class="dual-columns">
+                    <div>
+                        <h3>Abilities & Spells</h3>
+                    <div class="chip-control">
+                        <input id="abilityInput" list="abilitiesOptions" placeholder="Select or type ability name">
+                        <datalist id="abilitiesOptions"></datalist>
+                        <button type="button" id="addAbilityButton">Add</button>
+                    </div>
+                    <div id="abilitiesList" class="chip-list"></div>
+                    </div>
+                    <div>
+                        <h3>Skills</h3>
+                    <div class="skills-grid">
+                        <div>
+                            <h3>Primary Skills</h3>
+                            <div id="primarySkills" class="skill-list"></div>
+                        </div>
+                        <div>
+                            <h3>Weapon Skills</h3>
+                            <div id="weaponSkills" class="skill-list"></div>
+                        </div>
+                        <div>
+                            <div class="skill-header">
+                                <h3>Secondary Skills</h3>
+                                <div class="chip-control">
+                                    <select id="secondarySkillSelect">
+                                        <option value="">Add school</option>
+                                    </select>
+                                    <button type="button" id="addSecondarySkillButton">Add</button>
+                                </div>
+                            </div>
+                            <div id="secondarySkills" class="skill-list"></div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </section>
+
+            <section class="sheet-section inventory" data-section="inventory">
+                <div class="section-title">
+                    <h2>Inventory</h2>
+                    <button type="button" class="lock-button" data-lock="inventory">Lock</button>
+                </div>
+                <div class="inventory-header">
+                    <div class="encumbrance-meta">
+                        <span>Limit: <span id="encumbranceLimit">0</span></span>
+                        <span>Used: <span id="encumbranceUsage">0</span></span>
+                    </div>
+                    <button type="button" id="addInventoryButton">Add Item</button>
+                </div>
+                <div id="inventoryList" class="inventory-list"></div>
+            </section>
+
+            <section class="sheet-section wealth-grid" data-section="wealth">
+                <div class="section-title">
+                    <h2>Resources</h2>
+                    <button type="button" class="lock-button" data-lock="wealth">Lock</button>
+                </div>
+                <div class="field">
+                    <label for="goldField">Gold</label>
+                    <input id="goldField" type="number" min="0" data-type="number" data-bind="gold">
+                </div>
+                <div class="field">
+                    <label for="silverField">Silver</label>
+                    <input id="silverField" type="number" min="0" data-type="number" data-bind="silver">
+                </div>
+                <div class="field">
+                    <label for="copperField">Copper</label>
+                    <input id="copperField" type="number" min="0" data-type="number" data-bind="copper">
+                </div>
+                <div class="field">
+                    <label for="mementoField">Memento</label>
+                    <textarea id="mementoField" rows="2" data-bind="memento"></textarea>
+                </div>
+                <div class="field">
+                    <label for="tinyItemsField">Tiny Items</label>
+                    <textarea id="tinyItemsField" rows="2" data-bind="tinyItems"></textarea>
+                </div>
+            </section>
+
+            <section class="sheet-section gear-grid" data-section="armour">
+                <div class="section-title">
+                    <h2>Protection</h2>
+                    <button type="button" class="lock-button" data-lock="armour">Lock</button>
+                </div>
+                <div>
+                    <h3>Armour</h3>
+                    <div class="field">
+                        <label for="armourType">Armour Type</label>
+                        <input id="armourType" data-bind="armour.armourType">
+                    </div>
+                    <div class="field">
+                        <label for="armourRating">Armour Rating</label>
+                        <input id="armourRating" type="number" min="0" data-type="number" data-bind="armour.rating">
+                    </div>
+                    <div class="bane-grid">
+                        <label>Bane on</label>
+                        <label><input type="checkbox" data-bind="armour.banes.sneaking"> Sneaking</label>
+                        <label><input type="checkbox" data-bind="armour.banes.evade"> Evade</label>
+                        <label><input type="checkbox" data-bind="armour.banes.acrobatics"> Acrobatics</label>
+                    </div>
+                </div>
+                <div>
+                    <h3>Helmet</h3>
+                    <div class="field">
+                        <label for="helmetType">Helmet Type</label>
+                        <input id="helmetType" data-bind="helmet.helmetType">
+                    </div>
+                    <div class="field">
+                        <label for="helmetRating">Helmet Rating</label>
+                        <input id="helmetRating" type="number" min="0" data-type="number" data-bind="helmet.rating">
+                    </div>
+                    <div class="bane-grid">
+                        <label>Bane on</label>
+                        <label><input type="checkbox" data-bind="helmet.banes.awareness"> Awareness</label>
+                        <label><input type="checkbox" data-bind="helmet.banes.rangedAttacks"> Ranged Attacks</label>
+                    </div>
+                </div>
+            </section>
+
+            <section class="sheet-section weapons" data-section="weapons">
+                <div class="section-title">
+                    <h2>Weapons & Shields</h2>
+                    <button type="button" class="lock-button" data-lock="weapons">Lock</button>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Grip</th>
+                                <th>Range</th>
+                                <th>Damage</th>
+                                <th>Durability</th>
+                                <th>Features</th>
+                            </tr>
+                        </thead>
+                        <tbody id="weaponsTable"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="sheet-section rest-grid" data-section="recuperation">
+                <div class="section-title">
+                    <h2>Recovery & Vitality</h2>
+                    <button type="button" class="lock-button" data-lock="recuperation">Lock</button>
+                </div>
+                <div>
+                    <h3>Rests</h3>
+                    <label class="condition-pill">
+                        <input type="checkbox" data-bind="rests.roundRest"> Round Rest
+                    </label>
+                    <label class="condition-pill">
+                        <input type="checkbox" data-bind="rests.stretchRest"> Stretch Rest
+                    </label>
+                </div>
+                <div class="resource-block">
+                    <h3>Willpower</h3>
+                    <div class="resource-fraction">
+                        <input type="number" min="0" data-type="number" data-bind="willpower.current">
+                        <span>/</span>
+                        <input type="number" min="0" data-type="number" data-bind="willpower.max">
+                    </div>
+                </div>
+                <div class="resource-block">
+                    <h3>Hit Points</h3>
+                    <div class="resource-fraction">
+                        <input type="number" min="0" data-type="number" data-bind="hitPoints.current">
+                        <span>/</span>
+                        <input type="number" min="0" data-type="number" data-bind="hitPoints.max">
+                    </div>
+                </div>
+            </section>
+
+            <section class="sheet-section death-rolls" data-section="death">
+                <div class="section-title">
+                    <h2>Death Rolls</h2>
+                    <button type="button" class="lock-button" data-lock="death">Lock</button>
+                </div>
+                <div class="death-grids">
+                    <div>
+                        <h3>Successes</h3>
+                        <div id="deathSuccesses" class="death-track"></div>
+                    </div>
+                    <div>
+                        <h3>Failures</h3>
+                        <div id="deathFailures" class="death-track"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="sheet-section notes-grid" data-section="notes">
+                <div class="section-title">
+                    <h2>Notes & Background</h2>
+                    <button type="button" class="lock-button" data-lock="notes">Lock</button>
+                </div>
+                <div class="field">
+                    <label for="notesField">Notes</label>
+                    <textarea id="notesField" rows="6" data-bind="notes"></textarea>
+                </div>
+                <div class="field">
+                    <label for="backgroundField">Background</label>
+                    <textarea id="backgroundField" rows="6" data-bind="background"></textarea>
+                </div>
+            </section>
+
+            <section class="sheet-section share">
+                <div class="section-title">
+                    <h2>Shareable Link</h2>
+                </div>
+                <div class="field">
+                    <div class="copy-row">
+                        <input id="shareLink" type="text" readonly>
+                        <button type="button" id="copyLinkButton">Copy link</button>
+                    </div>
+                    <small>Keep this unique URL private; anyone with the link can edit this sheet.</small>
+                </div>
+            </section>
+        </form>
+    </main>
+    <script type="module" src="/sheet.js?v=20250305"></script>
+</body>
+</html>
