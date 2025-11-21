@@ -46,6 +46,7 @@ struct CharacterSheetPayload: Content, Equatable {
     var conditions: ConditionFlags
     var movement: Int
     var encumbranceLimit: Int?
+    var spells: [SpellEntry] = []
     var abilitiesAndSpells: [String]
     var skills: SkillSections
     var inventory: [InventoryItem]
@@ -82,6 +83,9 @@ struct CharacterSheetPayload: Content, Equatable {
             encumbranceLimit ?? CharacterSheetPayload.defaultEncumbranceLimit(for: attributes.strength),
             0
         )
+        spells = spells
+            .map { $0.normalized() }
+            .filter { !$0.name.isEmpty }
         abilitiesAndSpells = abilitiesAndSpells.map { $0.trimmedOrEmpty }.filter { !$0.isEmpty }
         skills.primary = skills.primary.map { $0.normalized() }
         skills.weapon = skills.weapon.map { $0.normalized() }
@@ -143,6 +147,24 @@ extension CharacterSheetPayload {
 
         static func empty() -> InventoryItem {
             InventoryItem(name: "", details: "", slots: 1)
+        }
+    }
+
+    struct SpellEntry: Content, Equatable {
+        var name: String
+        var inGrimoire: Bool
+        var prepared: Bool
+
+        func normalized() -> SpellEntry {
+            SpellEntry(
+                name: name.trimmedOrEmpty,
+                inGrimoire: inGrimoire,
+                prepared: prepared
+            )
+        }
+
+        static func learned(_ name: String) -> SpellEntry {
+            SpellEntry(name: name, inGrimoire: true, prepared: false).normalized()
         }
     }
 
@@ -285,7 +307,8 @@ extension CharacterSheetPayload {
             conditions: .empty(),
             movement: CharacterSheetPayload.defaultMovement(for: character.race.rawValue, agility: character.agility),
             encumbranceLimit: CharacterSheetPayload.defaultEncumbranceLimit(for: character.strength),
-            abilitiesAndSpells: (character.heroicAbilities.map { $0.rawValue } + character.magic).deduplicatedPreservingOrder(),
+            spells: character.magic.map { SpellEntry.learned($0) },
+            abilitiesAndSpells: character.heroicAbilities.map { $0.rawValue }.deduplicatedPreservingOrder(),
             skills: SkillSections(
                 primary: primarySkills,
                 weapon: weaponSkillEntries,
@@ -376,6 +399,10 @@ extension CharacterSheetPayload {
             base = 7
         }
         return base * 2
+    }
+
+    static func normalizeSpells(_ spells: [SpellEntry]) -> [SpellEntry] {
+        spells.map { $0.normalized() }.filter { !$0.name.isEmpty }
     }
 
     static func lookupArmour(for raw: String) -> ArmourBlock? {

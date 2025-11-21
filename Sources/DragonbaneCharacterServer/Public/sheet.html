@@ -148,7 +148,7 @@
                 </div>
                 <div class="dual-columns">
                     <div>
-                        <h3>Abilities & Spells</h3>
+                        <h3>Abilities</h3>
                     <div class="chip-control">
                         <input id="abilityInput" list="abilitiesOptions" placeholder="Select or type ability name">
                         <datalist id="abilitiesOptions"></datalist>
@@ -182,6 +182,21 @@
                     </div>
                 </div>
                 </div>
+            </section>
+
+            <section class="sheet-section" data-section="magic">
+                <div class="section-title">
+                    <h2>Magic</h2>
+                    <button type="button" class="lock-button" data-lock="magic">Lock</button>
+                </div>
+                <div class="magic-controls">
+                    <div class="chip-control">
+                        <input id="spellInput" list="spellsOptions" placeholder="Select or type spell name">
+                        <datalist id="spellsOptions"></datalist>
+                        <button type="button" id="addSpellButton">Add Spell</button>
+                    </div>
+                </div>
+                <div id="spellsList" class="spell-list"></div>
             </section>
 
             <section class="sheet-section inventory" data-section="inventory">

@@ -117,7 +117,7 @@ const SPELL_LIBRARY = [
   "Water Walk"
 ];
 
-const ABILITY_LIBRARY = [...new Set([...HEROIC_ABILITIES, ...SPELL_LIBRARY])].sort();
+const ABILITY_LIBRARY = [...HEROIC_ABILITIES].sort();
 const SKILL_ATTRIBUTE_MAP = {
   Acrobatics: "AGL",
   Awareness: "INT",
@@ -222,7 +222,21 @@ function ensureDataShape() {
     willpower: 0,
     charisma: 0
   };
-  state.data.abilitiesAndSpells = Array.isArray(state.data.abilitiesAndSpells) ? state.data.abilitiesAndSpells : [];
+  state.data.abilitiesAndSpells = Array.isArray(state.data.abilitiesAndSpells)
+    ? state.data.abilitiesAndSpells.map((value) => (typeof value === "string" ? value.trim() : "")).filter(Boolean)
+    : [];
+  const migratedSpells = [];
+  state.data.abilitiesAndSpells = state.data.abilitiesAndSpells.filter((value) => {
+    if (!value) return false;
+    if (SPELL_LIBRARY.includes(value)) {
+      migratedSpells.push(value);
+      return false;
+    }
+    return true;
+  });
+  state.data.spells = Array.isArray(state.data.spells)
+    ? normalizeSpells(state.data.spells)
+    : migratedSpells.map((name) => ({ name, inGrimoire: true, prepared: false }));
   state.data.inventory = Array.isArray(state.data.inventory)
     ? state.data.inventory.map((item) => ({
         name: item?.name ?? "",
@@ -283,6 +297,7 @@ async function initializeSheet() {
   populateSelect("ageField", AGE_OPTIONS);
   populateSecondarySelect();
   populateAbilityOptions();
+  populateSpellOptions();
   setupToolbar();
   setupSectionLocks();
 
@@ -340,6 +355,17 @@ function populateAbilityOptions() {
   if (!datalist) return;
   datalist.innerHTML = "";
   ABILITY_LIBRARY.forEach((value) => {
+    const option = document.createElement("option");
+    option.value = value;
+    datalist.appendChild(option);
+  });
+}
+
+function populateSpellOptions() {
+  const datalist = document.getElementById("spellsOptions");
+  if (!datalist) return;
+  datalist.innerHTML = "";
+  SPELL_LIBRARY.forEach((value) => {
     const option = document.createElement("option");
     option.value = value;
     datalist.appendChild(option);
@@ -638,8 +664,27 @@ function sanitizeEncumbranceLimit(value, fallback) {
   return Math.max(numeric, 0);
 }
 
+function normalizeSpells(source) {
+  const seen = new Set();
+  const list = Array.isArray(source) ? source : [];
+  return list
+    .map((spell) => ({
+      name: (spell?.name ?? "").trim(),
+      inGrimoire: spell?.inGrimoire !== undefined ? Boolean(spell.inGrimoire) : true,
+      prepared: Boolean(spell?.prepared)
+    }))
+    .filter((spell) => {
+      if (!spell.name) return false;
+      const key = spell.name.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+}
+
 function renderDynamicSections(initialRender = false) {
   renderAbilityList();
+  renderSpellList();
   if (initialRender || !state.skillSectionsReady) {
     renderSkillSections();
     state.skillSectionsReady = true;
@@ -691,6 +736,82 @@ function renderAbilityList() {
       markDirty();
     }
     abilityInput.value = "";
+  };
+}
+
+function renderSpellList() {
+  const container = document.getElementById("spellsList");
+  const addButton = document.getElementById("addSpellButton");
+  const spellInput = document.getElementById("spellInput");
+  if (!container || !addButton || !spellInput) return;
+  container.innerHTML = "";
+  const spells = Array.isArray(state.data?.spells) ? state.data.spells : [];
+  if (!spells.length) {
+    container.innerHTML = "<p class=\"empty-note\">No spells learned yet.</p>";
+  } else {
+    spells.forEach((spell, index) => {
+      const card = document.createElement("div");
+      card.className = "spell-card";
+
+      const nameInput = document.createElement("input");
+      nameInput.placeholder = "Spell name";
+      nameInput.value = spell.name ?? "";
+      nameInput.addEventListener("input", () => {
+        state.data.spells[index].name = nameInput.value;
+        markDirty();
+      });
+
+      const flags = document.createElement("div");
+      flags.className = "spell-flags";
+
+      const grimoireLabel = document.createElement("label");
+      const grimoireToggle = document.createElement("input");
+      grimoireToggle.type = "checkbox";
+      grimoireToggle.checked = spell.inGrimoire ?? true;
+      grimoireToggle.addEventListener("change", () => {
+        state.data.spells[index].inGrimoire = grimoireToggle.checked;
+        markDirty();
+      });
+      grimoireLabel.appendChild(grimoireToggle);
+      grimoireLabel.appendChild(document.createTextNode(" In Grimoire"));
+
+      const preparedLabel = document.createElement("label");
+      const preparedToggle = document.createElement("input");
+      preparedToggle.type = "checkbox";
+      preparedToggle.checked = Boolean(spell.prepared);
+      preparedToggle.addEventListener("change", () => {
+        state.data.spells[index].prepared = preparedToggle.checked;
+        markDirty();
+      });
+      preparedLabel.appendChild(preparedToggle);
+      preparedLabel.appendChild(document.createTextNode(" Prepared"));
+
+      flags.appendChild(grimoireLabel);
+      flags.appendChild(preparedLabel);
+
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "chip-remove";
+      remove.textContent = "Remove";
+      remove.addEventListener("click", () => {
+        state.data.spells.splice(index, 1);
+        renderSpellList();
+        markDirty();
+      });
+
+      card.appendChild(nameInput);
+      card.appendChild(remove);
+      card.appendChild(flags);
+      container.appendChild(card);
+    });
+  }
+
+  addButton.onclick = () => {
+    const name = spellInput.value.trim();
+    state.data.spells.push({ name, inGrimoire: true, prepared: false });
+    spellInput.value = "";
+    renderSpellList();
+    markDirty();
   };
 }
 
