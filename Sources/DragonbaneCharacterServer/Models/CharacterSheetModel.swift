@@ -240,6 +240,11 @@ extension CharacterSheetPayload {
         let weaponSkillEntries = Skills.allCases.filter { weaponSkills.contains($0) }.map { skill in
             SkillEntry(name: skill.rawValue, level: skillLevels[skill] ?? 0, needsImprovement: false)
         }
+        var secondarySkills: [SkillEntry] = []
+        if let mageSchool = CharacterSheetPayload.mageSecondarySkillName(for: character.profession) {
+            let level = CharacterSheetPayload.trainedSkillLevel(forAttribute: character.intelligence)
+            secondarySkills.append(SkillEntry(name: mageSchool, level: level, needsImprovement: false))
+        }
 
         var armourBlock = ArmourBlock.empty()
         var helmetBlock = HelmetBlock.empty()
@@ -284,7 +289,7 @@ extension CharacterSheetPayload {
             skills: SkillSections(
                 primary: primarySkills,
                 weapon: weaponSkillEntries,
-                secondary: []
+                secondary: secondarySkills
             ),
             inventory: inventoryItems,
             gold: currency.gold,
@@ -341,6 +346,36 @@ extension CharacterSheetPayload {
 
     static func defaultEncumbranceLimit(for strength: Int) -> Int {
         max((strength + 1) / 2, 0)
+    }
+
+    static func mageSecondarySkillName(for profession: Profession) -> String? {
+        switch profession {
+        case .animist:
+            return "Animism"
+        case .elementalist:
+            return "Elementalism"
+        case .mentalist:
+            return "Mentalism"
+        default:
+            return nil
+        }
+    }
+
+    static func trainedSkillLevel(forAttribute score: Int) -> Int {
+        let base: Int
+        switch score {
+        case ..<6:
+            base = 3
+        case 6...8:
+            base = 4
+        case 9...12:
+            base = 5
+        case 13...15:
+            base = 6
+        default:
+            base = 7
+        }
+        return base * 2
     }
 
     static func lookupArmour(for raw: String) -> ArmourBlock? {
