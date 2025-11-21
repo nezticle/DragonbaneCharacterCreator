@@ -803,19 +803,19 @@ body.sheet-page {
     padding: 0.75rem;
     background: var(--surface);
     box-shadow: 0 6px 14px var(--shadow);
-    display: grid;
-    grid-template-columns: 1fr auto;
-    grid-template-rows: auto auto;
+    display: flex;
+    flex-direction: column;
     gap: 0.5rem;
-    align-items: center;
+    align-items: flex-start;
+    position: relative;
 }
 
 .spell-card .chip-remove {
-    grid-row: span 2;
-    align-self: start;
+    position: absolute;
+    top: 0.35rem;
+    right: 0.35rem;
     height: auto;
     padding: 0.1rem 0.35rem;
-    justify-self: end;
     font-size: 0.9rem;
     line-height: 1;
     min-width: 0;
