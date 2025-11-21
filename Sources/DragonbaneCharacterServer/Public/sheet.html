@@ -13,7 +13,10 @@
             <h1>Interactive Character Sheet</h1>
             <p class="subtitle">Adopted heroes live here. Keep this URL private if you wish to guard your adventurer.</p>
         </div>
-        <a href="/" class="link-button">Back to generator</a>
+        <div class="hero-actions">
+            <button type="button" id="themeToggle" class="theme-toggle" aria-pressed="false">Toggle theme</button>
+            <a href="/" class="link-button">Back to generator</a>
+        </div>
     </header>
     <main id="sheetApp" data-sheet-id="">
         <div id="sheetLoading" class="sheet-card sheet-loading">
@@ -28,37 +31,40 @@
                     <button type="button" id="saveButton">Save now</button>
                 </div>
             </div>
+            <div class="sheet-layout">
 
             <section class="sheet-section identity" data-section="identity">
                 <div class="section-title">
                     <h2>Identity</h2>
                     <button type="button" class="lock-button" data-lock="identity">Lock</button>
                 </div>
-                <div class="field">
-                    <label for="characterName">Character Name</label>
-                    <input id="characterName" data-bind="characterName">
-                </div>
-                <div class="field">
-                    <label for="playerName">Player Name</label>
-                    <input id="playerName" data-bind="playerName">
-                </div>
-                <div class="field">
-                    <label for="kinField">Kin</label>
-                    <select id="kinField" data-bind="kin">
-                        <option value="">Choose kin</option>
-                    </select>
-                </div>
-                <div class="field">
-                    <label for="professionField">Profession</label>
-                    <select id="professionField" data-bind="profession">
-                        <option value="">Choose profession</option>
-                    </select>
-                </div>
-                <div class="field">
-                    <label for="ageField">Age</label>
-                    <select id="ageField" data-bind="age">
-                        <option value="">Choose age</option>
-                    </select>
+                <div class="identity-grid">
+                    <div class="field">
+                        <label for="characterName">Character Name</label>
+                        <input id="characterName" data-bind="characterName">
+                    </div>
+                    <div class="field">
+                        <label for="playerName">Player Name</label>
+                        <input id="playerName" data-bind="playerName">
+                    </div>
+                    <div class="field">
+                        <label for="kinField">Kin</label>
+                        <select id="kinField" data-bind="kin">
+                            <option value="">Choose kin</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="professionField">Profession</label>
+                        <select id="professionField" data-bind="profession">
+                            <option value="">Choose profession</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="ageField">Age</label>
+                        <select id="ageField" data-bind="age">
+                            <option value="">Choose age</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="field">
                     <label for="weaknessField">Weakness</label>
@@ -66,7 +72,7 @@
                 </div>
                 <div class="field">
                     <label for="appearanceField">Appearance</label>
-                    <textarea id="appearanceField" rows="5" data-bind="appearance"></textarea>
+                    <textarea id="appearanceField" rows="4" data-bind="appearance"></textarea>
                 </div>
             </section>
 
@@ -358,6 +364,7 @@
                     <small>Keep this unique URL private; anyone with the link can edit this sheet.</small>
                 </div>
             </section>
+            </div>
         </form>
     </main>
     <script type="module" src="/sheet.js?v=20250305"></script>

@@ -34,6 +34,7 @@ const PROFESSION_OPTIONS = [
 const AGE_OPTIONS = ["Young", "Adult", "Old"];
 const SECONDARY_SKILL_OPTIONS = ["Animism", "Elementalism", "Mentalism"];
 const GRIP_OPTIONS = ["", "R", "L", "RL"];
+const THEME_STORAGE_KEY = "dragonbaneTheme";
 
 const HEROIC_ABILITIES = [
   "Adaptive",
@@ -150,6 +151,46 @@ const SKILL_ATTRIBUTE_MAP = {
   Swords: "STR"
 };
 
+function resolveThemePreference() {
+  if (typeof localStorage !== "undefined") {
+    const stored = localStorage.getItem(THEME_STORAGE_KEY);
+    if (stored === "dark" || stored === "light") {
+      return stored;
+    }
+  }
+  const mediaQuery = typeof window !== "undefined" && window.matchMedia
+    ? window.matchMedia("(prefers-color-scheme: dark)")
+    : null;
+  return mediaQuery?.matches ? "dark" : "light";
+}
+
+function applyTheme(theme) {
+  const resolved = theme === "dark" ? "dark" : "light";
+  const root = document.documentElement;
+  root.dataset.theme = resolved;
+  root.classList.toggle("theme-dark", resolved === "dark");
+  root.classList.toggle("theme-light", resolved === "light");
+  const toggle = document.getElementById("themeToggle");
+  if (toggle) {
+    toggle.textContent = resolved === "dark" ? "Light mode" : "Dark mode";
+    toggle.setAttribute("aria-pressed", resolved === "dark" ? "true" : "false");
+  }
+}
+
+function setupThemeToggle() {
+  if (typeof document === "undefined") return;
+  applyTheme(resolveThemePreference());
+  const toggle = document.getElementById("themeToggle");
+  if (!toggle) return;
+  toggle.addEventListener("click", () => {
+    const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+    }
+    applyTheme(nextTheme);
+  });
+}
+
 const state = {
   sheetId: "",
   data: null,
@@ -226,6 +267,7 @@ function emptyWeapon() {
 }
 
 async function initializeSheet() {
+  setupThemeToggle();
   state.sheetId = extractSheetId();
   const app = document.getElementById("sheetApp");
   if (state.sheetId) {

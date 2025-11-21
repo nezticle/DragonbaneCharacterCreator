@@ -45,10 +45,52 @@ const IMAGE_DEFAULTS = {
 };
 
 const ADMIN_TOKEN_STORAGE_KEY = "dragonbaneAdminToken";
+const THEME_STORAGE_KEY = "dragonbaneTheme";
 let appConfig = null;
+
+function resolveThemePreference() {
+  if (typeof localStorage !== "undefined") {
+    const stored = localStorage.getItem(THEME_STORAGE_KEY);
+    if (stored === "dark" || stored === "light") {
+      return stored;
+    }
+  }
+  const mediaQuery = typeof window !== "undefined" && window.matchMedia
+    ? window.matchMedia("(prefers-color-scheme: dark)")
+    : null;
+  return mediaQuery?.matches ? "dark" : "light";
+}
+
+function applyTheme(theme) {
+  const resolved = theme === "dark" ? "dark" : "light";
+  const root = document.documentElement;
+  root.dataset.theme = resolved;
+  root.classList.toggle("theme-dark", resolved === "dark");
+  root.classList.toggle("theme-light", resolved === "light");
+  const toggle = document.getElementById("themeToggle");
+  if (toggle) {
+    toggle.textContent = resolved === "dark" ? "Light mode" : "Dark mode";
+    toggle.setAttribute("aria-pressed", resolved === "dark" ? "true" : "false");
+  }
+}
+
+function setupThemeToggle() {
+  if (typeof document === "undefined") return;
+  applyTheme(resolveThemePreference());
+  const toggle = document.getElementById("themeToggle");
+  if (!toggle) return;
+  toggle.addEventListener("click", () => {
+    const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+    }
+    applyTheme(nextTheme);
+  });
+}
 
 if (typeof document !== "undefined") {
   document.addEventListener("DOMContentLoaded", async () => {
+    setupThemeToggle();
     await loadAppConfig();
     setupTabs();
     setupAdminTokenField();
