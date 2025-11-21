@@ -407,7 +407,7 @@ body.sheet-page {
     grid-template-areas:
         "identity identity identity"
         "attributes talents inventory"
-        "attributes talents inventory"
+        "magic talents inventory"
         "wealth talents inventory"
         "armour weapons weapons"
         "recuperation weapons weapons"
@@ -424,6 +424,7 @@ body.sheet-page {
             "identity identity"
             "attributes attributes"
             "talents talents"
+            "magic magic"
             "inventory wealth"
             "armour weapons"
             "recuperation weapons"
@@ -439,6 +440,7 @@ body.sheet-page {
             "identity"
             "attributes"
             "talents"
+            "magic"
             "inventory"
             "wealth"
             "armour"
@@ -470,6 +472,7 @@ body.sheet-page {
 [data-section="identity"] { grid-area: identity; }
 [data-section="attributes"] { grid-area: attributes; }
 [data-section="talents"] { grid-area: talents; }
+[data-section="magic"] { grid-area: magic; }
 [data-section="inventory"] { grid-area: inventory; }
 [data-section="wealth"] { grid-area: wealth; }
 [data-section="armour"] { grid-area: armour; }
@@ -809,8 +812,10 @@ body.sheet-page {
 
 .spell-card .chip-remove {
     grid-row: span 2;
-    align-self: stretch;
-    height: 100%;
+    align-self: start;
+    height: auto;
+    padding: 0.1rem 0.35rem;
+    justify-self: end;
 }
 
 .spell-flags {
