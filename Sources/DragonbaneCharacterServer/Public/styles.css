@@ -1,24 +1,90 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=IM+Fell+English:ital,wght@0,400;0,700;1,400&family=Libre+Baskerville:wght@400;700&display=swap');
+
 :root {
-    color-scheme: light dark;
-    font-family: 'Helvetica Neue', Arial, sans-serif;
-    background-color: #0f172a;
-    color: #f8fafc;
-    --surface: rgba(15, 23, 42, 0.85);
-    --border: rgba(148, 163, 184, 0.3);
-    --border-strong: rgba(148, 163, 184, 0.5);
-    --accent: #38bdf8;
-    --accent-strong: #6366f1;
+    color-scheme: light;
+    font-family: 'Libre Baskerville', Georgia, 'Times New Roman', serif;
+    --page-bg: radial-gradient(circle at 30% 10%, rgba(181, 33, 35, 0.08), transparent 25%),
+        radial-gradient(circle at 70% 5%, rgba(47, 107, 63, 0.12), transparent 30%),
+        linear-gradient(180deg, #f8f3ea 0%, #f0e6d9 40%, #e5d8c7 100%);
+    --paper: #f5efe6;
+    --paper-deep: #e7dccd;
+    --surface: #fdf7ed;
+    --ink: #2d1b12;
+    --muted: #6b594e;
+    --line: #c2b59b;
+    --shadow: rgba(41, 26, 18, 0.14);
+    --accent: #b52123;
+    --accent-strong: #2f6b3f;
+    --trim: #e0cfb4;
+    --control-bg: #fffdf7;
+    --table-alt: #f9f1e4;
+    --badge-bg: #fffaf2;
+}
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    --page-bg: radial-gradient(circle at 30% 10%, rgba(181, 33, 35, 0.18), transparent 28%),
+        radial-gradient(circle at 70% 5%, rgba(47, 107, 63, 0.2), transparent 32%),
+        linear-gradient(180deg, #181310 0%, #120f0d 45%, #0d0b0a 100%);
+    --paper: #1f1a16;
+    --paper-deep: #16120f;
+    --surface: #171310;
+    --ink: #f3e9db;
+    --muted: #cbbfae;
+    --line: #3b332c;
+    --shadow: rgba(0, 0, 0, 0.35);
+    --accent: #e75c5c;
+    --accent-strong: #63b47a;
+    --trim: #5a4a3e;
+    --control-bg: #1c1714;
+    --table-alt: #1c1814;
+    --badge-bg: #221c18;
 }
 
 body {
     margin: 0;
     min-height: 100vh;
-    background: radial-gradient(circle at top, rgba(56, 189, 248, 0.15), transparent 50%), linear-gradient(180deg, rgba(15,23,42,1) 0%, rgba(30,41,59,1) 100%);
+    background: var(--page-bg);
+    position: relative;
+    color: var(--ink);
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image: linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px), linear-gradient(rgba(0,0,0,0.035) 1px, transparent 1px);
+    background-size: 18px 18px;
+    opacity: 0.35;
+    mix-blend-mode: multiply;
 }
 
 header {
     text-align: center;
     padding: 2.5rem 1rem 1rem;
+}
+
+.page-header {
+    max-width: 1100px;
+    margin: 0 auto;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem 1.5rem;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.page-header p {
+    color: var(--muted);
+    margin: 0 0 0.5rem;
+}
+
+.page-header .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 main {
@@ -35,22 +101,24 @@ main {
     flex-wrap: wrap;
     gap: 0.75rem;
     justify-content: center;
+    padding: 0.5rem 1rem;
 }
 
 .tab-button {
     padding: 0.65rem 1.25rem;
     border-radius: 999px;
-    border: 1px solid transparent;
-    background: rgba(15, 23, 42, 0.6);
-    color: inherit;
-    font-weight: 600;
+    border: 1px solid var(--line);
+    background: linear-gradient(135deg, var(--surface), var(--paper));
+    color: var(--ink);
+    font-weight: 700;
     cursor: pointer;
-    transition: background 0.2s ease, border-color 0.2s ease;
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .tab-button.active {
     border-color: var(--accent);
-    background: linear-gradient(135deg, rgba(56,189,248,0.25), rgba(99,102,241,0.35));
+    box-shadow: 0 8px 16px var(--shadow);
+    background: linear-gradient(135deg, var(--paper), var(--paper-deep));
 }
 
 .tab-button:focus-visible {
@@ -78,11 +146,11 @@ section h2 {
 }
 
 .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
+    background: var(--paper);
+    border: 1px solid var(--line);
     border-radius: 12px;
     padding: 1.25rem;
-    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.5);
+    box-shadow: 0 12px 32px var(--shadow);
 }
 
 .field {
@@ -102,11 +170,12 @@ textarea,
 button {
     padding: 0.6rem;
     border-radius: 8px;
-    border: 1px solid var(--border-strong);
-    background: rgba(30, 41, 59, 0.8);
-    color: inherit;
+    border: 1px solid var(--line);
+    background: var(--control-bg);
+    color: var(--ink);
     font-size: 1rem;
     font-family: inherit;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 2px rgba(0,0,0,0.08);
 }
 
 select[multiple] {
@@ -115,15 +184,27 @@ select[multiple] {
 
 button {
     cursor: pointer;
-    font-weight: 600;
-    background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-    border: none;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--paper), var(--paper-deep));
+    border: 1px solid var(--line);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    color: var(--ink);
 }
 
 button:hover {
     transform: translateY(-1px);
-    box-shadow: 0 8px 20px rgba(56, 189, 248, 0.35);
+    border-color: var(--accent);
+    box-shadow: 0 10px 20px var(--shadow);
+}
+
+.theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 1rem;
+    border-radius: 12px;
+    background: var(--surface);
+    border: 1px solid var(--line);
 }
 
 .result.loading {
@@ -136,8 +217,8 @@ button:hover {
     width: 1.25rem;
     height: 1.25rem;
     border-radius: 999px;
-    border: 3px solid rgba(148, 163, 184, 0.3);
-    border-top-color: #38bdf8;
+    border: 3px solid rgba(105, 67, 50, 0.35);
+    border-top-color: var(--accent);
     animation: spin 0.8s linear infinite;
 }
 
@@ -150,7 +231,7 @@ button:hover {
 }
 
 small {
-    color: rgba(148, 163, 184, 0.85);
+    color: var(--muted);
 }
 
 .result {
@@ -163,15 +244,16 @@ small {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    border: 1px solid rgba(248, 250, 252, 0.08);
-    background: rgba(10, 15, 25, 0.6);
+    border: 1px solid var(--line);
+    background: var(--surface);
+    box-shadow: 0 8px 18px var(--shadow);
 }
 
 .character-sheet.empty {
     align-items: center;
     justify-content: center;
     font-style: italic;
-    color: rgba(148, 163, 184, 0.9);
+    color: var(--muted);
 }
 
 .sheet-header {
@@ -180,7 +262,7 @@ small {
     flex-wrap: wrap;
     gap: 0.75rem;
     padding-bottom: 0.5rem;
-    border-bottom: 1px solid rgba(248, 250, 252, 0.08);
+    border-bottom: 1px solid var(--line);
 }
 
 .sheet-name {
@@ -190,12 +272,12 @@ small {
 
 .sheet-meta {
     margin: 0;
-    color: rgba(148, 163, 184, 0.9);
+    color: var(--muted);
 }
 
 .sheet-id {
     font-weight: 600;
-    color: rgba(148, 163, 184, 0.9);
+    color: var(--accent-strong);
 }
 
 .sheet-adopt {
@@ -228,15 +310,18 @@ small {
     gap: 0.35rem;
     padding: 0.55rem 1rem;
     border-radius: 999px;
-    border: 1px solid var(--border-strong);
+    border: 1px solid var(--line);
     text-decoration: none;
     color: inherit;
-    transition: border-color 0.2s ease, transform 0.2s ease;
+    background: linear-gradient(135deg, var(--surface), var(--paper));
+    box-shadow: 0 6px 16px var(--shadow);
+    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .link-button:hover {
     border-color: var(--accent);
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px var(--shadow);
 }
 
 body.sheet-page {
@@ -252,22 +337,33 @@ body.sheet-page {
     justify-content: space-between;
     gap: 2rem;
     align-items: center;
+    border-bottom: 3px double var(--line);
 }
 
 .sheet-page__hero .eyebrow {
     text-transform: uppercase;
     letter-spacing: 0.2em;
     margin: 0 0 0.5rem;
-    color: rgba(148, 163, 184, 0.9);
+    color: var(--muted);
+    font-family: 'Cinzel', 'IM Fell English', serif;
 }
 
 .sheet-page__hero h1 {
     margin: 0 0 0.5rem;
+    font-family: 'IM Fell English', 'Cinzel', serif;
+    letter-spacing: 1px;
+    color: var(--accent);
 }
 
 .sheet-page__hero .subtitle {
     margin: 0;
-    color: rgba(148, 163, 184, 0.85);
+    color: var(--muted);
+}
+
+.hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
 }
 
 #sheetApp {
@@ -277,10 +373,11 @@ body.sheet-page {
 }
 
 .sheet-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 1.5rem;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 1.25rem;
+    box-shadow: 0 8px 20px var(--shadow);
 }
 
 .sheet-loading {
@@ -293,8 +390,9 @@ body.sheet-page {
 
 .sheet-error {
     margin-top: 1rem;
-    border-color: rgba(248, 113, 113, 0.4);
-    color: #fecaca;
+    border-color: rgba(181, 33, 35, 0.45);
+    background: rgba(181, 33, 35, 0.12);
+    color: var(--ink);
 }
 
 .sheet-form {
@@ -303,9 +401,87 @@ body.sheet-page {
     gap: 1.5rem;
 }
 
+.sheet-layout {
+    display: grid;
+    grid-template-columns: 1.05fr 1.35fr 1fr;
+    grid-template-areas:
+        "identity identity identity"
+        "attributes talents inventory"
+        "attributes talents inventory"
+        "wealth talents inventory"
+        "armour weapons weapons"
+        "recuperation weapons weapons"
+        "death notes notes"
+        "share share share";
+    gap: 1rem;
+    align-items: start;
+}
+
+@media (max-width: 1100px) {
+    .sheet-layout {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-areas:
+            "identity identity"
+            "attributes attributes"
+            "talents talents"
+            "inventory wealth"
+            "armour weapons"
+            "recuperation weapons"
+            "death notes"
+            "share share";
+    }
+}
+
+@media (max-width: 720px) {
+    .sheet-layout {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "identity"
+            "attributes"
+            "talents"
+            "inventory"
+            "wealth"
+            "armour"
+            "weapons"
+            "recuperation"
+            "death"
+            "notes"
+            "share";
+    }
+}
+
+@media (max-width: 768px) {
+    .sheet-page__hero {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .hero-actions {
+        width: 100%;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+
+    #sheetApp {
+        padding: 0 0.75rem 2.5rem;
+    }
+}
+
+[data-section="identity"] { grid-area: identity; }
+[data-section="attributes"] { grid-area: attributes; }
+[data-section="talents"] { grid-area: talents; }
+[data-section="inventory"] { grid-area: inventory; }
+[data-section="wealth"] { grid-area: wealth; }
+[data-section="armour"] { grid-area: armour; }
+[data-section="weapons"] { grid-area: weapons; }
+[data-section="recuperation"] { grid-area: recuperation; }
+[data-section="death"] { grid-area: death; }
+[data-section="notes"] { grid-area: notes; }
+.sheet-section.share { grid-area: share; }
+
 .sheet-toolbar {
-    background: var(--surface);
-    border: 1px solid var(--border);
+    background: linear-gradient(180deg, var(--surface) 0%, var(--paper-deep) 100%);
+    border: 1px solid var(--line);
     border-radius: 12px;
     padding: 1rem;
     display: flex;
@@ -313,6 +489,7 @@ body.sheet-page {
     gap: 1rem;
     justify-content: space-between;
     align-items: center;
+    box-shadow: 0 8px 18px var(--shadow);
 }
 
 .share-group {
@@ -342,14 +519,16 @@ body.sheet-page {
 }
 
 #saveStatus.error {
-    color: #fecaca;
+    color: var(--accent);
 }
 
 .sheet-section {
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    background: rgba(15, 23, 42, 0.65);
-    padding: 1.25rem;
+    border: 2px solid var(--line);
+    border-radius: 14px;
+    background: linear-gradient(180deg, var(--paper) 0%, var(--paper-deep) 100%);
+    padding: 1.1rem 1.25rem 1.35rem;
+    box-shadow: 0 10px 24px var(--shadow);
+    position: relative;
 }
 
 .section-title {
@@ -358,25 +537,31 @@ body.sheet-page {
     justify-content: space-between;
     gap: 1rem;
     margin-bottom: 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px solid var(--line);
 }
 
 .section-title h2 {
     margin: 0;
+    font-family: 'Cinzel', 'IM Fell English', serif;
+    letter-spacing: 0.05em;
+    color: var(--accent);
 }
 
 .lock-button {
-    border: 1px solid var(--border-strong);
-    background: transparent;
+    border: 1px solid var(--line);
+    background: var(--surface);
     border-radius: 999px;
-    padding: 0.2rem 0.75rem;
+    padding: 0.25rem 0.85rem;
     font-size: 0.85rem;
     cursor: pointer;
-    color: inherit;
-    transition: border-color 0.2s ease;
+    color: var(--ink);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .lock-button:hover {
     border-color: var(--accent);
+    box-shadow: 0 4px 12px var(--shadow);
 }
 
 .lock-button.locked {
@@ -390,6 +575,12 @@ body.sheet-page {
     gap: 1rem;
 }
 
+.identity-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.9rem 1rem;
+}
+
 .attribute-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -397,18 +588,21 @@ body.sheet-page {
 }
 
 .attribute-card {
-    border: 1px solid var(--border);
+    border: 2px solid var(--line);
     border-radius: 14px;
     padding: 1rem;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    background: rgba(15, 23, 42, 0.5);
+    background: radial-gradient(circle at 20% 20%, var(--surface) 0%, var(--paper-deep) 100%);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 .attribute-card input[type="number"] {
     width: 4rem;
     text-align: center;
+    font-size: 1.2rem;
+    font-weight: 700;
 }
 
 .derived-grid {
@@ -437,15 +631,16 @@ body.sheet-page {
     gap: 0.4rem;
     padding: 0.25rem 0.6rem;
     border-radius: 999px;
-    border: 1px solid var(--border-strong);
-    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid var(--line);
+    background: var(--surface);
     font-size: 0.9rem;
+    color: var(--ink);
 }
 
 .chip-remove {
     background: transparent;
     border: none;
-    color: rgba(248, 250, 252, 0.9);
+    color: var(--accent);
     cursor: pointer;
     font-weight: 600;
     padding: 0.1rem 0.4rem;
@@ -457,9 +652,27 @@ body.sheet-page {
     gap: 1.5rem;
 }
 
+.abilities-column h3,
+.skills-column h3,
+.skills-grid h3 {
+    margin: 0 0 0.35rem;
+    font-family: 'Cinzel', 'IM Fell English', serif;
+    letter-spacing: 0.04em;
+    color: var(--ink);
+    text-transform: uppercase;
+}
+
+.skill-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.35rem;
+}
+
 .secondary {
-    background: transparent;
-    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    border: 1px solid var(--line);
     transition: border-color 0.2s ease, color 0.2s ease;
 }
 
@@ -479,7 +692,7 @@ body.sheet-page {
     align-items: center;
     gap: 0.75rem;
     padding: 0.25rem 0;
-    border-bottom: 1px solid rgba(248, 250, 252, 0.05);
+    border-bottom: 1px dashed var(--line);
 }
 
 .skill-row:last-child {
@@ -526,13 +739,14 @@ body.sheet-page {
 }
 
 .inventory-card {
-    border: 1px solid var(--border);
+    border: 1px solid var(--line);
     border-radius: 12px;
     padding: 0.75rem;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    background: rgba(15, 23, 42, 0.45);
+    background: var(--surface);
+    box-shadow: 0 6px 14px var(--shadow);
 }
 
 .inventory-slots {
@@ -548,14 +762,15 @@ body.sheet-page {
 }
 
 .inventory-card.over-limit {
-    border-color: rgba(248, 113, 113, 0.8);
-    background: rgba(127, 29, 29, 0.35);
+    border-color: rgba(181, 33, 35, 0.7);
+    background: rgba(181, 33, 35, 0.12);
 }
 
 .encumbrance-badge {
     border-radius: 999px;
-    border: 1px solid var(--border-strong);
+    border: 1px solid var(--line);
     padding: 0.35rem 0.75rem;
+    background: var(--badge-bg);
 }
 
 .wealth-grid {
@@ -584,16 +799,28 @@ body.sheet-page {
 table {
     width: 100%;
     border-collapse: collapse;
+    background: var(--badge-bg);
 }
 
 th, td {
-    border: 1px solid var(--border);
+    border: 1px solid var(--line);
     padding: 0.35rem;
     text-align: left;
 }
 
 td textarea {
     width: 100%;
+}
+
+thead th {
+    background: linear-gradient(180deg, var(--paper) 0%, var(--paper-deep) 100%);
+    color: var(--ink);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+tbody tr:nth-child(even) {
+    background: var(--table-alt);
 }
 
 .rest-grid {
@@ -637,9 +864,11 @@ td textarea {
 }
 
 .death-box {
-    border: 1px solid var(--border);
+    border: 1px solid var(--line);
     border-radius: 8px;
     padding: 0.35rem 0.75rem;
+    background: var(--badge-bg);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
 }
 
 .notes-grid {
@@ -658,16 +887,20 @@ td textarea {
     gap: 0.35rem;
     align-items: center;
     font-size: 0.9rem;
-    color: rgba(148, 163, 184, 0.9);
+    color: var(--ink);
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--badge-bg);
 }
 
 .sheet-section.locked {
-    opacity: 0.75;
+    opacity: 0.88;
     border-color: var(--accent);
 }
 
 .field-locked {
-    background: rgba(15, 23, 42, 0.3);
+    background: var(--paper-deep);
 }
 
 .share .copy-row {
@@ -698,11 +931,11 @@ td textarea {
 }
 
 .stat-card {
-    border: 1px solid rgba(248, 250, 252, 0.08);
+    border: 1px solid var(--line);
     border-radius: 8px;
     padding: 0.5rem;
     text-align: center;
-    background: rgba(30, 41, 59, 0.45);
+    background: var(--surface);
 }
 
 .stat-card span {
@@ -712,7 +945,7 @@ td textarea {
 .stat-label {
     font-size: 0.8rem;
     letter-spacing: 1px;
-    color: rgba(148, 163, 184, 0.9);
+    color: var(--muted);
 }
 
 .stat-value {
@@ -803,7 +1036,7 @@ td textarea {
 
 .roster-table th,
 .roster-table td {
-    border-bottom: 1px solid rgba(248, 250, 252, 0.08);
+    border-bottom: 1px solid var(--line);
     padding: 0.5rem 0.25rem;
 }
 
@@ -812,7 +1045,7 @@ td textarea {
     letter-spacing: 0.5px;
     font-size: 0.85rem;
     text-transform: uppercase;
-    color: rgba(148, 163, 184, 0.9);
+    color: var(--muted);
 }
 
 .roster-table button {
@@ -821,7 +1054,8 @@ td textarea {
 }
 
 .action-danger {
-    background: linear-gradient(135deg, #fb7185, #f97316);
+    background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+    color: #fff;
 }
 
 @media (max-width: 720px) {
