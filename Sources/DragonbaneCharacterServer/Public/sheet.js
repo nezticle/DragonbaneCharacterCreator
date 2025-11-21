@@ -201,7 +201,8 @@ const state = {
   bindings: new Map(),
   statusElement: null,
   skillSectionsReady: false,
-  lockedSections: new Set()
+  lockedSections: new Set(),
+  magicEditing: false
 };
 
 document.addEventListener("DOMContentLoaded", initializeSheet);
@@ -300,6 +301,7 @@ async function initializeSheet() {
   populateSpellOptions();
   setupToolbar();
   setupSectionLocks();
+  setupMagicEditing();
 
   if (!state.sheetId) {
     showError("Missing character sheet identifier in the URL.");
@@ -388,6 +390,34 @@ function setupSectionLocks() {
   });
 }
 
+function setupMagicEditing() {
+  const toggle = document.getElementById("toggleMagicEdit");
+  if (!toggle) return;
+  toggle.addEventListener("click", () => {
+    if (state.lockedSections.has("magic")) return;
+    state.magicEditing = !state.magicEditing;
+    updateMagicEditUI();
+    renderSpellList();
+  });
+  updateMagicEditUI();
+}
+
+function updateMagicEditUI() {
+  const toggle = document.getElementById("toggleMagicEdit");
+  if (!toggle) return;
+  const locked = state.lockedSections.has("magic");
+  const editing = isMagicEditable();
+  toggle.textContent = editing ? "Done" : "Edit";
+  toggle.classList.toggle("locked", editing);
+  toggle.setAttribute("aria-pressed", editing ? "true" : "false");
+  toggle.disabled = locked;
+}
+
+function isMagicEditable() {
+  if (state.lockedSections.has("magic")) return false;
+  return Boolean(state.magicEditing);
+}
+
 function toggleSectionLock(sectionId) {
   if (!sectionId) return;
   const shouldLock = !state.lockedSections.has(sectionId);
@@ -426,6 +456,13 @@ function applySectionLock(sectionId, locked, persist = true) {
     button.textContent = locked ? "Unlock" : "Lock";
     button.classList.toggle("locked", locked);
     button.setAttribute("aria-pressed", locked ? "true" : "false");
+  }
+  if (sectionId === "magic") {
+    if (locked) {
+      state.magicEditing = false;
+    }
+    updateMagicEditUI();
+    renderSpellList();
   }
 }
 
@@ -743,9 +780,16 @@ function renderSpellList() {
   const container = document.getElementById("spellsList");
   const addButton = document.getElementById("addSpellButton");
   const spellInput = document.getElementById("spellInput");
+  const controls = document.querySelector(".magic-controls");
   if (!container || !addButton || !spellInput) return;
   container.innerHTML = "";
   const spells = Array.isArray(state.data?.spells) ? state.data.spells : [];
+  const editing = isMagicEditable();
+  addButton.disabled = !editing;
+  spellInput.disabled = !editing;
+  if (controls) {
+    controls.classList.toggle("hidden", !editing);
+  }
   if (!spells.length) {
     container.innerHTML = "<p class=\"empty-note\">No spells learned yet.</p>";
   } else {
@@ -756,10 +800,7 @@ function renderSpellList() {
       const nameInput = document.createElement("input");
       nameInput.placeholder = "Spell name";
       nameInput.value = spell.name ?? "";
-      nameInput.addEventListener("input", () => {
-        state.data.spells[index].name = nameInput.value;
-        markDirty();
-      });
+      nameInput.readOnly = true;
 
       const flags = document.createElement("div");
       flags.className = "spell-flags";
@@ -768,6 +809,7 @@ function renderSpellList() {
       const grimoireToggle = document.createElement("input");
       grimoireToggle.type = "checkbox";
       grimoireToggle.checked = spell.inGrimoire ?? true;
+      grimoireToggle.disabled = !editing;
       grimoireToggle.addEventListener("change", () => {
         state.data.spells[index].inGrimoire = grimoireToggle.checked;
         markDirty();
@@ -779,6 +821,7 @@ function renderSpellList() {
       const preparedToggle = document.createElement("input");
       preparedToggle.type = "checkbox";
       preparedToggle.checked = Boolean(spell.prepared);
+      preparedToggle.disabled = !editing;
       preparedToggle.addEventListener("change", () => {
         state.data.spells[index].prepared = preparedToggle.checked;
         markDirty();
@@ -792,7 +835,9 @@ function renderSpellList() {
       const remove = document.createElement("button");
       remove.type = "button";
       remove.className = "chip-remove";
-      remove.textContent = "Remove";
+      remove.textContent = "✕";
+      remove.ariaLabel = `Remove ${spell.name || "spell"}`;
+      remove.style.display = editing ? "" : "none";
       remove.addEventListener("click", () => {
         state.data.spells.splice(index, 1);
         renderSpellList();
@@ -808,6 +853,7 @@ function renderSpellList() {
 
   addButton.onclick = () => {
     const name = spellInput.value.trim();
+    if (!editing || !name) return;
     state.data.spells.push({ name, inGrimoire: true, prepared: false });
     spellInput.value = "";
     renderSpellList();

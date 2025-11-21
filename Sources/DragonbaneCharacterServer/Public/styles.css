@@ -816,6 +816,9 @@ body.sheet-page {
     height: auto;
     padding: 0.1rem 0.35rem;
     justify-self: end;
+    font-size: 0.9rem;
+    line-height: 1;
+    min-width: 0;
 }
 
 .spell-flags {
