@@ -227,7 +227,7 @@ function ensureDataShape() {
     ? state.data.inventory.map((item) => ({
         name: item?.name ?? "",
         details: item?.details ?? "",
-        slots: Math.max(Number(item?.slots) || 1, 1)
+        slots: Math.max(Number(item?.slots) || 0, 0)
       }))
     : [];
   state.data.skills = state.data.skills || { primary: [], weapon: [], secondary: [] };
@@ -252,6 +252,9 @@ function ensureDataShape() {
     const agility = state.data.attributes?.agility ?? 0;
     state.data.movement = calculateMovement(state.data.kin ?? "", agility);
   }
+  const strength = state.data.attributes?.strength ?? 0;
+  const baseEncumbrance = calculateEncumbranceBaseLimit(strength);
+  state.data.encumbranceLimit = sanitizeEncumbranceLimit(state.data.encumbranceLimit, baseEncumbrance);
 }
 
 function normalizeToggleArray(source) {
@@ -565,6 +568,9 @@ function handleDerivedUpdates(path) {
   if (path.startsWith("inventory")) {
     updateEncumbranceDisplay();
   }
+  if (path === "encumbranceLimit") {
+    updateEncumbranceDisplay();
+  }
 }
 
 function updateDerivedFields() {
@@ -620,6 +626,16 @@ function calculateMovement(kin, agility) {
   else if (agility <= 15) modifier = 2;
   else modifier = 4;
   return Math.max(base + modifier, 0);
+}
+
+function calculateEncumbranceBaseLimit(strength) {
+  return Math.max(Math.ceil(strength / 2), 0);
+}
+
+function sanitizeEncumbranceLimit(value, fallback) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return fallback;
+  return Math.max(numeric, 0);
 }
 
 function renderDynamicSections(initialRender = false) {
@@ -808,16 +824,16 @@ function renderInventoryList() {
     const slotRow = document.createElement("div");
     slotRow.className = "inventory-slots";
     const slotLabel = document.createElement("span");
-    slotLabel.textContent = "Slots";
+    slotLabel.textContent = "Weight";
     const slotInput = document.createElement("input");
     slotInput.type = "number";
-    slotInput.min = "1";
+    slotInput.min = "0";
     if (typeof state.data.inventory[index].slots !== "number") {
-      state.data.inventory[index].slots = 1;
+      state.data.inventory[index].slots = 0;
     }
-    slotInput.value = state.data.inventory[index].slots ?? 1;
+    slotInput.value = state.data.inventory[index].slots ?? 0;
     slotInput.addEventListener("input", () => {
-      const value = Math.max(parseInt(slotInput.value, 10) || 1, 1);
+      const value = Math.max(parseInt(slotInput.value, 10) || 0, 0);
       slotInput.value = value;
       state.data.inventory[index].slots = value;
       updateEncumbranceDisplay();
@@ -853,18 +869,30 @@ function renderInventoryList() {
 
 function updateEncumbranceDisplay() {
   const strength = state.data?.attributes?.strength ?? 0;
-  const limit = Math.max(Math.ceil(strength / 2), 0);
-  const badge = document.getElementById("encumbranceLimit");
+  const baseLimit = calculateEncumbranceBaseLimit(strength);
+  const limitInput = document.getElementById("encumbranceLimit");
+  const baseLabel = document.getElementById("encumbranceBase");
   const usedEl = document.getElementById("encumbranceUsage");
-  if (badge) {
-    badge.textContent = limit;
+  if (baseLabel) {
+    baseLabel.textContent = baseLimit;
+  }
+  let limit = sanitizeEncumbranceLimit(state.data?.encumbranceLimit, baseLimit);
+  if (state.data && state.data.encumbranceLimit !== limit) {
+    state.data.encumbranceLimit = limit;
+    refreshBindingsForPath("encumbranceLimit");
+  }
+  if (limitInput) {
+    const renderedValue = String(limit);
+    if (limitInput.value !== renderedValue) {
+      limitInput.value = renderedValue;
+    }
   }
   let used = 0;
   const cards = document.querySelectorAll("#inventoryList .inventory-card");
   cards.forEach((card, index) => {
-    const slots = Math.max(Number(state.data?.inventory?.[index]?.slots) || 1, 1);
+    const slots = Math.max(Number(state.data?.inventory?.[index]?.slots) || 0, 0);
     used += slots;
-    card.classList.toggle("over-limit", limit > 0 && used > limit);
+    card.classList.toggle("over-limit", limit >= 0 && used > limit);
   });
   if (usedEl) {
     usedEl.textContent = used;

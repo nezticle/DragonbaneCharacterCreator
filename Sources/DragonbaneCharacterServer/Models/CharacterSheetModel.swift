@@ -45,6 +45,7 @@ struct CharacterSheetPayload: Content, Equatable {
     var attributes: AttributeBlock
     var conditions: ConditionFlags
     var movement: Int
+    var encumbranceLimit: Int?
     var abilitiesAndSpells: [String]
     var skills: SkillSections
     var inventory: [InventoryItem]
@@ -74,9 +75,13 @@ struct CharacterSheetPayload: Content, Equatable {
             InventoryItem(
                 name: item.name.trimmedOrEmpty,
                 details: item.details.trimmedOrEmpty,
-                slots: max(item.slots, 1)
+                slots: max(item.slots, 0)
             )
         }
+        encumbranceLimit = max(
+            encumbranceLimit ?? CharacterSheetPayload.defaultEncumbranceLimit(for: attributes.strength),
+            0
+        )
         abilitiesAndSpells = abilitiesAndSpells.map { $0.trimmedOrEmpty }.filter { !$0.isEmpty }
         skills.primary = skills.primary.map { $0.normalized() }
         skills.weapon = skills.weapon.map { $0.normalized() }
@@ -274,6 +279,7 @@ extension CharacterSheetPayload {
             attributes: attributeBlock,
             conditions: .empty(),
             movement: CharacterSheetPayload.defaultMovement(for: character.race.rawValue, agility: character.agility),
+            encumbranceLimit: CharacterSheetPayload.defaultEncumbranceLimit(for: character.strength),
             abilitiesAndSpells: (character.heroicAbilities.map { $0.rawValue } + character.magic).deduplicatedPreservingOrder(),
             skills: SkillSections(
                 primary: primarySkills,
@@ -331,6 +337,10 @@ extension CharacterSheetPayload {
         }
 
         return max(base + modifier, 0)
+    }
+
+    static func defaultEncumbranceLimit(for strength: Int) -> Int {
+        max((strength + 1) / 2, 0)
     }
 
     static func lookupArmour(for raw: String) -> ArmourBlock? {

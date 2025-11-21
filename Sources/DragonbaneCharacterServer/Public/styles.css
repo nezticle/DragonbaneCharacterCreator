@@ -732,6 +732,17 @@ body.sheet-page {
     font-size: 0.95rem;
 }
 
+.encumbrance-limit {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.encumbrance-limit input {
+    width: 4rem;
+    text-align: center;
+}
+
 .inventory-list {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));

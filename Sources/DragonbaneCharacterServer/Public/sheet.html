@@ -191,7 +191,10 @@
                 </div>
                 <div class="inventory-header">
                     <div class="encumbrance-meta">
-                        <span>Limit: <span id="encumbranceLimit">0</span></span>
+                        <label class="encumbrance-limit" for="encumbranceLimit">
+                            <span>Limit (base <span id="encumbranceBase">0</span>)</span>
+                            <input id="encumbranceLimit" type="number" min="0" data-type="number" data-bind="encumbranceLimit">
+                        </label>
                         <span>Used: <span id="encumbranceUsage">0</span></span>
                     </div>
                     <button type="button" id="addInventoryButton">Add Item</button>
